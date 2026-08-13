@@ -1,11 +1,20 @@
 from pathlib import Path
 
-# Etapa 1 - simulacao local dos sensores (ainda sem MQTT)
+# Intervalo padrao entre ciclos dos sensores simulados.
 INTERVALO_PADRAO_SEGUNDOS = 5
 
-# Arquivo local onde a telemetria simulada sera registrada.
+# Arquivos locais de apoio e auditoria.
 PASTA_DADOS = Path(__file__).resolve().parents[1] / "data"
 ARQUIVO_TELEMETRIA = PASTA_DADOS / "telemetria.jsonl"
+ARQUIVO_MQTT_RECEBIDO = PASTA_DADOS / "mqtt_recebido.jsonl"
+
+# Etapa 2 - configuracao MQTT local.
+MQTT_BROKER = "localhost"
+MQTT_PORT = 1883
+MQTT_KEEPALIVE = 60
+MQTT_QOS = 1
+MQTT_TOPIC_PREFIX = "hydroalert/telemetria"
+MQTT_TOPIC_WILDCARD = f"{MQTT_TOPIC_PREFIX}/+"
 
 # Pontos de monitoramento SIMULADOS para o MVP em Goiania/GO.
 # As coordenadas servem apenas para demonstracao academica nesta etapa.
