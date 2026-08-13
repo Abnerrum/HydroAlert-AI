@@ -2,27 +2,79 @@
 
 Sistema inteligente de alerta preditivo de inundações urbanas com IoT, NoSQL, Data Science, BI e Inteligência Artificial.
 
-> Projeto acadêmico. Os sensores, coordenadas e medições da Etapa 1 são simulados e não representam alertas oficiais.
+> Projeto acadêmico. Os sensores, coordenadas e medições atuais são simulados e não representam alertas oficiais.
 
 ## Objetivo
 
-Construir um protótipo capaz de coletar telemetria hidrometeorológica, analisar chuva e nível da água e, nas próximas etapas, integrar MQTT, MongoDB, FastAPI, Machine Learning, LLM, mapas, BI e revisão humana.
+Construir um protótipo capaz de coletar telemetria hidrometeorológica, analisar chuva e nível da água e integrar MQTT, MongoDB, FastAPI, Machine Learning, LLM, mapas, BI e revisão humana.
 
-## Etapa 1 — Simulador IoT
+## Etapa 1 — Simulador IoT ✅
 
-A primeira etapa gera telemetria simulada para Goiânia/GO com:
+A primeira etapa gera telemetria simulada para Goiânia/GO com chuva, nível da água, variação, tendência, cotas e classificação de risco.
 
-- chuva em milímetros;
-- nível da água em metros;
-- variação do nível;
-- tendência do nível;
-- cota de atenção, alerta e crítica;
-- classificação de risco;
-- localização do sensor;
-- data/hora;
-- status do sensor.
+Os registros locais são gravados em:
 
-Os registros são gravados em `data/telemetria.jsonl`.
+```text
+data/telemetria.jsonl
+```
+
+Executar 10 ciclos:
+
+```powershell
+python -m iot.sensor_simulator --ciclos 10
+```
+
+## Etapa 2 — MQTT 🧪
+
+A segunda etapa adiciona comunicação MQTT entre os sensores simulados e um receptor.
+
+```text
+Sensores simulados
+       ↓
+Paho MQTT Publisher
+       ↓
+Eclipse Mosquitto
+       ↓
+Paho MQTT Subscriber
+       ↓
+data/mqtt_recebido.jsonl
+```
+
+### Dependência
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+### Broker MQTT
+
+Instale o Eclipse Mosquitto no Windows e mantenha o broker local em execução na porta `1883`.
+
+Documentação detalhada:
+
+```text
+docs/ETAPA_02_MQTT.md
+```
+
+### Terminal 1 — Subscriber
+
+```powershell
+python -m iot.mqtt_subscriber
+```
+
+### Terminal 2 — Publisher
+
+```powershell
+python -m iot.mqtt_publisher --ciclos 10
+```
+
+Tópicos utilizados:
+
+```text
+hydroalert/telemetria/GYN-SIM-001
+hydroalert/telemetria/GYN-SIM-002
+hydroalert/telemetria/GYN-SIM-003
+```
 
 ## Estrutura atual
 
@@ -31,88 +83,62 @@ HydroAlert-AI/
 ├── data/
 │   └── .gitkeep
 ├── docs/
-│   └── ETAPA_01_IOT.md
+│   ├── ETAPA_01_IOT.md
+│   └── ETAPA_02_MQTT.md
 ├── iot/
 │   ├── __init__.py
 │   ├── config.py
-│   └── sensor_simulator.py
+│   ├── sensor_simulator.py
+│   ├── mqtt_publisher.py
+│   └── mqtt_subscriber.py
 ├── tests/
 │   └── test_sensor_simulator.py
 ├── .gitignore
 ├── requirements.txt
 ├── run_etapa1.bat
+├── run_mqtt_publisher.bat
+├── run_mqtt_subscriber.bat
 └── README.md
 ```
 
 ## Como rodar no Visual Studio Code
 
-### 1. Clonar o projeto
+### Clonar
 
 ```bash
 git clone https://github.com/Abnerrum/HydroAlert-AI.git
 cd HydroAlert-AI
 ```
 
-### 2. Criar o ambiente virtual
+### Criar ambiente virtual
 
-```bash
+```powershell
 python -m venv .venv
 ```
 
-### 3. Ativar no Windows
-
-PowerShell:
+### Ativar no PowerShell
 
 ```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
 ```
 
-Ou Prompt de Comando:
+### Instalar dependências
 
-```cmd
-.venv\Scripts\activate.bat
-```
-
-### 4. Instalar dependências
-
-```bash
-pip install -r requirements.txt
-```
-
-A Etapa 1 usa somente a biblioteca padrão do Python.
-
-### 5. Rodar 10 ciclos de teste
-
-```bash
-python -m iot.sensor_simulator --ciclos 10
-```
-
-### 6. Rodar continuamente
-
-```bash
-python -m iot.sensor_simulator
-```
-
-Para encerrar use `Ctrl + C`.
-
-### Atalho no Windows
-
-Também é possível executar:
-
-```text
-run_etapa1.bat
+```powershell
+python -m pip install -r requirements.txt
 ```
 
 ## Testes automatizados
 
-```bash
+```powershell
 python -m unittest discover -s tests -v
 ```
 
 ## Roadmap
 
 1. ✅ Simulador de sensores IoT
-2. ⏳ MQTT + Eclipse Mosquitto + Paho MQTT
+2. 🧪 MQTT + Eclipse Mosquitto + Paho MQTT
 3. ⏳ MongoDB
 4. ⏳ FastAPI
 5. ⏳ Dashboard Web
