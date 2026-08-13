@@ -1,2 +1,1 @@
-# Etapa 1 usa somente a biblioteca padrao do Python.
-# Dependencias externas serao adicionadas na Etapa 2 (MQTT).
+paho-mqtt>=2.1.0,<3.0.0
