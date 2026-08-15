@@ -1,3 +1,4 @@
+import argparse
 import json
 
 import paho.mqtt.client as mqtt
@@ -14,6 +15,7 @@ from .config import (
 
 
 def salvar_recebido(dados: dict) -> None:
+    """Persiste localmente cada mensagem MQTT recebida em formato JSONL."""
     PASTA_DADOS.mkdir(parents=True, exist_ok=True)
     with ARQUIVO_MQTT_RECEBIDO.open("a", encoding="utf-8") as arquivo:
         arquivo.write(json.dumps(dados, ensure_ascii=False) + "\n")
@@ -30,6 +32,11 @@ def on_connect(client, userdata, flags, reason_code, properties):
 def on_message(client, userdata, msg):
     try:
         dados = json.loads(msg.payload.decode("utf-8"))
+
+        if not isinstance(dados, dict):
+            print(f"Mensagem ignorada em {msg.topic}: payload JSON nao e um objeto.")
+            return
+
         salvar_recebido(dados)
 
         print(
@@ -39,11 +46,11 @@ def on_message(client, userdata, msg):
             f"Nivel: {dados.get('nivel_m')} m | "
             f"Risco: {dados.get('risco')}"
         )
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, UnicodeDecodeError):
         print(f"Mensagem invalida recebida em {msg.topic}: {msg.payload!r}")
 
 
-def main() -> None:
+def criar_cliente() -> mqtt.Client:
     client = mqtt.Client(
         callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
         client_id="hydroalert-subscriber",
@@ -51,16 +58,24 @@ def main() -> None:
     )
     client.on_connect = on_connect
     client.on_message = on_message
+    return client
+
+
+def executar(broker: str, porta: int) -> None:
+    client = criar_cliente()
 
     try:
-        print(f"Conectando ao broker MQTT em {MQTT_BROKER}:{MQTT_PORT}...")
-        client.connect(MQTT_BROKER, MQTT_PORT, MQTT_KEEPALIVE)
+        print(f"Conectando ao broker MQTT em {broker}:{porta}...")
+        client.connect(broker, porta, MQTT_KEEPALIVE)
         print("Aguardando telemetria. Use Ctrl+C para encerrar.\n")
         client.loop_forever()
     except (ConnectionRefusedError, OSError) as erro:
         print("\nERRO: nao foi possivel conectar ao broker MQTT.")
         print(f"Detalhe: {erro}")
-        print("Confirme se o Eclipse Mosquitto esta instalado e em execucao na porta 1883.")
+        print(
+            "Confirme se o Eclipse Mosquitto esta instalado e em execucao "
+            f"em {broker}:{porta}."
+        )
     except KeyboardInterrupt:
         print("\nSubscriber encerrado pelo usuario.")
     finally:
@@ -68,6 +83,29 @@ def main() -> None:
             client.disconnect()
         except Exception:
             pass
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Subscriber MQTT da telemetria do HydroAlert AI"
+    )
+    parser.add_argument(
+        "--broker",
+        default=MQTT_BROKER,
+        help=f"Endereco do broker MQTT (padrao: {MQTT_BROKER}).",
+    )
+    parser.add_argument(
+        "--porta",
+        type=int,
+        default=MQTT_PORT,
+        help=f"Porta do broker MQTT (padrao: {MQTT_PORT}).",
+    )
+    args = parser.parse_args()
+
+    if not 1 <= args.porta <= 65535:
+        parser.error("--porta deve estar entre 1 e 65535")
+
+    executar(args.broker, args.porta)
 
 
 if __name__ == "__main__":
