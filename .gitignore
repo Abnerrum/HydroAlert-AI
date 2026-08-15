@@ -25,7 +25,10 @@ Thumbs.db
 
 # Dados gerados localmente
 /data/telemetria.jsonl
+/data/mqtt_recebido.jsonl
 
-# Modelos e artefatos futuros
+# Modelos e artefatos treinados
 *.joblib
 *.pkl
+/models/*
+!/models/.gitkeep
