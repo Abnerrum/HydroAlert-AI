@@ -2,7 +2,9 @@ import argparse
 import json
 
 import paho.mqtt.client as mqtt
+from pymongo.errors import PyMongoError
 
+from database.mongodb import preparar_banco, salvar_telemetria
 from .config import (
     ARQUIVO_MQTT_RECEBIDO,
     MQTT_BROKER,
@@ -19,6 +21,15 @@ def salvar_recebido(dados: dict) -> None:
     PASTA_DADOS.mkdir(parents=True, exist_ok=True)
     with ARQUIVO_MQTT_RECEBIDO.open("a", encoding="utf-8") as arquivo:
         arquivo.write(json.dumps(dados, ensure_ascii=False) + "\n")
+
+
+def persistir_mongodb(dados: dict) -> str | None:
+    """Salva a telemetria no MongoDB sem interromper o MQTT se o banco cair."""
+    try:
+        return salvar_telemetria(dados)
+    except PyMongoError as erro:
+        print(f"AVISO MongoDB: leitura mantida apenas no JSONL. Detalhe: {erro}")
+        return None
 
 
 def on_connect(client, userdata, flags, reason_code, properties):
@@ -38,13 +49,16 @@ def on_message(client, userdata, msg):
             return
 
         salvar_recebido(dados)
+        mongo_id = persistir_mongodb(dados)
+        banco = "MongoDB" if mongo_id else "JSONL"
 
         print(
             f"RECEBIDO | {msg.topic} | "
             f"Sensor: {dados.get('sensor_id')} | "
             f"Chuva: {dados.get('chuva_mm')} mm | "
             f"Nivel: {dados.get('nivel_m')} m | "
-            f"Risco: {dados.get('risco')}"
+            f"Risco: {dados.get('risco')} | "
+            f"Persistencia: {banco}"
         )
     except (json.JSONDecodeError, UnicodeDecodeError):
         print(f"Mensagem invalida recebida em {msg.topic}: {msg.payload!r}")
@@ -65,6 +79,13 @@ def executar(broker: str, porta: int) -> None:
     client = criar_cliente()
 
     try:
+        try:
+            preparar_banco()
+            print("MongoDB conectado. Telemetria sera persistida no banco NoSQL.")
+        except PyMongoError as erro:
+            print("MongoDB indisponivel. O subscriber continuara usando JSONL como fallback.")
+            print(f"Detalhe MongoDB: {erro}")
+
         print(f"Conectando ao broker MQTT em {broker}:{porta}...")
         client.connect(broker, porta, MQTT_KEEPALIVE)
         print("Aguardando telemetria. Use Ctrl+C para encerrar.\n")
@@ -87,7 +108,7 @@ def executar(broker: str, porta: int) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Subscriber MQTT da telemetria do HydroAlert AI"
+        description="Subscriber MQTT + MongoDB da telemetria do HydroAlert AI"
     )
     parser.add_argument(
         "--broker",
