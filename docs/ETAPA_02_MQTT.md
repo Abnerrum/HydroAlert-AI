@@ -54,6 +54,8 @@ Deixe esse terminal aberto.
 
 Para o nosso MVP, o broker será usado apenas localmente em `localhost:1883`.
 
+Se aparecer um erro informando que a porta `1883` já está em uso, o Mosquitto pode já estar executando como serviço do Windows. Nesse caso, não abra uma segunda instância e siga para o subscriber.
+
 ## 4. Abrir o subscriber
 
 Abra outro terminal do VS Code, ative o `.venv` e execute:
@@ -66,7 +68,13 @@ Resultado esperado:
 
 ```text
 Conectado ao broker. Assinando: hydroalert/telemetria/+
-Aguardando telemetria...
+Aguardando telemetria. Use Ctrl+C para encerrar.
+```
+
+O subscriber também aceita outro endereço e porta de broker:
+
+```powershell
+python -m iot.mqtt_subscriber --broker localhost --porta 1883
 ```
 
 ## 5. Abrir o publisher
@@ -83,6 +91,12 @@ O publisher gera os dados dos sensores e publica em tópicos como:
 hydroalert/telemetria/GYN-SIM-001
 hydroalert/telemetria/GYN-SIM-002
 hydroalert/telemetria/GYN-SIM-003
+```
+
+Também é possível configurar broker, porta e intervalo:
+
+```powershell
+python -m iot.mqtt_publisher --broker localhost --porta 1883 --intervalo 2 --ciclos 10
 ```
 
 ## 6. Resultado esperado
@@ -105,7 +119,26 @@ As mensagens recebidas também serão salvas em:
 data/mqtt_recebido.jsonl
 ```
 
-## 7. Atalhos no Windows
+Cada linha do arquivo representa uma leitura JSON completa recebida pelo subscriber.
+
+## 7. Testes automatizados
+
+Execute:
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+Os testes da Etapa 2 verificam:
+
+- montagem do tópico MQTT de cada sensor;
+- serialização do payload JSON;
+- uso do QoS configurado;
+- inscrição do subscriber no tópico `hydroalert/telemetria/+`;
+- gravação do arquivo JSONL;
+- rejeição de mensagens inválidas.
+
+## 8. Atalhos no Windows
 
 Subscriber:
 
@@ -119,6 +152,28 @@ Publisher (10 ciclos):
 run_mqtt_publisher.bat
 ```
 
+## Solução de problemas
+
+### `ConnectionRefusedError`
+
+Confirme se o Mosquitto está executando e se a porta é `1883`.
+
+### `No module named paho`
+
+Execute:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+### Publisher envia, mas subscriber não recebe
+
+Confirme se os dois estão usando o mesmo broker e a mesma porta. O subscriber deve estar aberto antes do publisher para visualizar toda a demonstração.
+
+### Arquivo `mqtt_recebido.jsonl` não apareceu
+
+O arquivo só é criado depois que pelo menos uma mensagem MQTT válida é recebida.
+
 ## Critério de conclusão
 
 A Etapa 2 estará validada quando:
@@ -127,6 +182,7 @@ A Etapa 2 estará validada quando:
 - o subscriber conectar ao broker;
 - o publisher publicar as mensagens;
 - o subscriber receber as mesmas mensagens;
-- `data/mqtt_recebido.jsonl` for criado com os dados recebidos.
+- `data/mqtt_recebido.jsonl` for criado com os dados recebidos;
+- os testes automatizados forem executados sem erro.
 
 Depois disso, o subscriber será evoluído na Etapa 3 para persistir a telemetria em MongoDB.
