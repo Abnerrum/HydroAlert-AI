@@ -50,9 +50,7 @@ class TestMQTT(unittest.TestCase):
 
     def test_publicar_leitura_monta_topico_e_payload(self):
         cliente = ClientePublisherFake()
-
         publicar_leitura(cliente, self.leitura)
-
         self.assertEqual(len(cliente.chamadas), 1)
         chamada = cliente.chamadas[0]
         self.assertEqual(
@@ -66,19 +64,13 @@ class TestMQTT(unittest.TestCase):
 
     def test_on_connect_assina_topico_wildcard(self):
         cliente = MagicMock()
-
         on_connect(cliente, None, None, 0, None)
-
-        cliente.subscribe.assert_called_once_with(
-            MQTT_TOPIC_WILDCARD,
-            qos=MQTT_QOS,
-        )
+        cliente.subscribe.assert_called_once_with(MQTT_TOPIC_WILDCARD, qos=MQTT_QOS)
 
     def test_salvar_recebido_grava_jsonl(self):
         with tempfile.TemporaryDirectory() as pasta:
             pasta_dados = Path(pasta)
             arquivo = pasta_dados / "mqtt_recebido.jsonl"
-
             with patch("iot.mqtt_subscriber.PASTA_DADOS", pasta_dados), patch(
                 "iot.mqtt_subscriber.ARQUIVO_MQTT_RECEBIDO", arquivo
             ):
@@ -94,20 +86,22 @@ class TestMQTT(unittest.TestCase):
             payload=json.dumps(self.leitura).encode("utf-8"),
         )
 
-        with patch("iot.mqtt_subscriber.salvar_recebido") as salvar:
+        with patch("iot.mqtt_subscriber.salvar_recebido") as salvar, patch(
+            "iot.mqtt_subscriber.persistir_mongodb",
+            return_value="mongo-id",
+        ) as persistir:
             on_message(None, None, mensagem)
 
         salvar.assert_called_once_with(self.leitura)
+        persistir.assert_called_once_with(self.leitura)
 
     def test_on_message_ignora_payload_invalido(self):
         mensagem = SimpleNamespace(
             topic=f"{MQTT_TOPIC_PREFIX}/GYN-SIM-001",
             payload=b"nao-e-json",
         )
-
         with patch("iot.mqtt_subscriber.salvar_recebido") as salvar:
             on_message(None, None, mensagem)
-
         salvar.assert_not_called()
 
     def test_on_message_ignora_json_que_nao_seja_objeto(self):
@@ -115,10 +109,8 @@ class TestMQTT(unittest.TestCase):
             topic=f"{MQTT_TOPIC_PREFIX}/GYN-SIM-001",
             payload=b"[1, 2, 3]",
         )
-
         with patch("iot.mqtt_subscriber.salvar_recebido") as salvar:
             on_message(None, None, mensagem)
-
         salvar.assert_not_called()
 
 
