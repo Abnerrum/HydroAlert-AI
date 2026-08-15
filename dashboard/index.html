@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HydroAlert AI</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="topbar">
+        <div>
+            <p class="eyebrow">PROJETO INTEGRADOR</p>
+            <h1>HydroAlert AI</h1>
+            <p>Monitoramento hidrometeorológico simulado com IoT, MQTT, MongoDB, API e Machine Learning.</p>
+        </div>
+        <div class="status-box">
+            <span id="api-status" class="status-dot"></span>
+            <span id="status-text">Verificando sistema...</span>
+        </div>
+    </header>
+
+    <main>
+        <section class="notice">
+            Dados simulados para fins acadêmicos. Este sistema não substitui alertas oficiais da Defesa Civil, CEMADEN ou órgãos públicos.
+        </section>
+
+        <section class="toolbar">
+            <label for="sensor-select">Sensor</label>
+            <select id="sensor-select">
+                <option value="">Todos os sensores</option>
+            </select>
+            <button id="refresh-btn">Atualizar agora</button>
+            <span id="fonte-dados">Fonte: --</span>
+        </section>
+
+        <section class="cards">
+            <article class="card">
+                <span>Registros analisados</span>
+                <strong id="total-registros">0</strong>
+            </article>
+            <article class="card">
+                <span>Chuva média</span>
+                <strong><span id="chuva-media">0.00</span> mm</strong>
+            </article>
+            <article class="card">
+                <span>Nível máximo</span>
+                <strong><span id="nivel-maximo">0.000</span> m</strong>
+            </article>
+            <article class="card">
+                <span>Risco atual</span>
+                <strong id="risco-atual">SEM DADOS</strong>
+            </article>
+        </section>
+
+        <section class="grid">
+            <article class="panel">
+                <div class="panel-header">
+                    <h2>Nível da água</h2>
+                    <span>últimas leituras</span>
+                </div>
+                <div class="chart-wrap"><canvas id="nivel-chart"></canvas></div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-header">
+                    <h2>Chuva</h2>
+                    <span>mm por leitura</span>
+                </div>
+                <div class="chart-wrap"><canvas id="chuva-chart"></canvas></div>
+            </article>
+        </section>
+
+        <section class="grid lower-grid">
+            <article class="panel">
+                <div class="panel-header">
+                    <h2>Machine Learning</h2>
+                    <span>Etapa 6</span>
+                </div>
+                <div id="ml-box" class="ml-box">Verificando modelo...</div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-header">
+                    <h2>Distribuição de risco</h2>
+                    <span>amostra atual</span>
+                </div>
+                <div id="risk-list" class="risk-list"></div>
+            </article>
+        </section>
+
+        <section class="panel table-panel">
+            <div class="panel-header">
+                <h2>Telemetria recente</h2>
+                <span id="updated-at">--</span>
+            </div>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Sensor</th>
+                            <th>Chuva</th>
+                            <th>Nível</th>
+                            <th>Tendência</th>
+                            <th>Risco</th>
+                        </tr>
+                    </thead>
+                    <tbody id="telemetry-body"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
