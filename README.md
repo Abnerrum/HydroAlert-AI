@@ -24,9 +24,9 @@ Executar 10 ciclos:
 python -m iot.sensor_simulator --ciclos 10
 ```
 
-## Etapa 2 — MQTT 🧪
+## Etapa 2 — MQTT ✅ Código concluído
 
-A segunda etapa adiciona comunicação MQTT entre os sensores simulados e um receptor.
+A segunda etapa adiciona comunicação MQTT entre os sensores simulados e um receptor. O fluxo está implementado; a validação de integração deve ser executada localmente com o Eclipse Mosquitto em funcionamento.
 
 ```text
 Sensores simulados
@@ -62,6 +62,12 @@ docs/ETAPA_02_MQTT.md
 python -m iot.mqtt_subscriber
 ```
 
+Também é possível informar broker e porta:
+
+```powershell
+python -m iot.mqtt_subscriber --broker localhost --porta 1883
+```
+
 ### Terminal 2 — Publisher
 
 ```powershell
@@ -75,6 +81,14 @@ hydroalert/telemetria/GYN-SIM-001
 hydroalert/telemetria/GYN-SIM-002
 hydroalert/telemetria/GYN-SIM-003
 ```
+
+### Testes da Etapa 2
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+Os testes cobrem publicação, tópico, payload, QoS, inscrição do subscriber, persistência JSONL e rejeição de mensagens inválidas.
 
 ## Estrutura atual
 
@@ -92,7 +106,8 @@ HydroAlert-AI/
 │   ├── mqtt_publisher.py
 │   └── mqtt_subscriber.py
 ├── tests/
-│   └── test_sensor_simulator.py
+│   ├── test_sensor_simulator.py
+│   └── test_mqtt.py
 ├── .gitignore
 ├── requirements.txt
 ├── run_etapa1.bat
@@ -138,7 +153,7 @@ python -m unittest discover -s tests -v
 ## Roadmap
 
 1. ✅ Simulador de sensores IoT
-2. 🧪 MQTT + Eclipse Mosquitto + Paho MQTT
+2. ✅ MQTT + Eclipse Mosquitto + Paho MQTT — código concluído; validar integração local
 3. ⏳ MongoDB
 4. ⏳ FastAPI
 5. ⏳ Dashboard Web
