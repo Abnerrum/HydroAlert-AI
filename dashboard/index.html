@@ -3,306 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#08111f">
-    <title>HydroAlert AI | Command Center</title>
+    <meta name="theme-color" content="#07101d">
+    <title>HydroAlert AI | Centro de Operações</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="/static/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <div class="app-shell">
         <aside class="sidebar">
             <div class="brand">
-                <div class="brand-mark">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12 2.8c-3.3 4.1-6.5 7.4-6.5 11.1A6.5 6.5 0 0 0 12 20.4a6.5 6.5 0 0 0 6.5-6.5C18.5 10.2 15.3 6.9 12 2.8Z"/>
-                        <path class="brand-wave" d="M8.3 14.5c1.2-.8 2.5-.8 3.7 0 1.2.8 2.5.8 3.7 0"/>
-                    </svg>
-                </div>
+                <div class="brand-mark">H</div>
                 <div>
                     <strong>HydroAlert</strong>
-                    <span>AI Command Center</span>
+                    <span>GO Command Center</span>
                 </div>
             </div>
 
-            <nav class="sidebar-nav" aria-label="Navegação do dashboard">
-                <a class="nav-item active" href="#visao-geral">
-                    <span class="nav-icon">01</span>
-                    <span>Visão geral</span>
-                </a>
-                <a class="nav-item" href="#analises">
-                    <span class="nav-icon">02</span>
-                    <span>Análises</span>
-                </a>
-                <a class="nav-item" href="#machine-learning">
-                    <span class="nav-icon">03</span>
-                    <span>Machine Learning</span>
-                </a>
-                <a class="nav-item" href="#telemetria">
-                    <span class="nav-icon">04</span>
-                    <span>Telemetria</span>
-                </a>
+            <nav class="sidebar-nav" aria-label="Navegação do sistema">
+                <a class="nav-item active" href="#operacao"><span class="nav-icon">01</span><span>Operação</span></a>
+                <a class="nav-item" href="#mapa"><span class="nav-icon">02</span><span>Mapa territorial</span></a>
+                <a class="nav-item" href="#analises"><span class="nav-icon">03</span><span>Análises</span></a>
+                <a class="nav-item" href="#machine-learning"><span class="nav-icon">04</span><span>Previsões IA</span></a>
+                <a class="nav-item" href="#telemetria"><span class="nav-icon">05</span><span>Telemetria</span></a>
             </nav>
 
             <div class="sidebar-footer">
-                <span class="footer-label">Projeto Integrador</span>
-                <strong>Etapas 1–5 validadas</strong>
-                <small>Monitoramento acadêmico</small>
+                <span class="footer-label">Cobertura simulada</span>
+                <strong>Estado de Goiás</strong>
+                <small id="sidebar-network">Rede acadêmica</small>
             </div>
         </aside>
 
         <div class="workspace">
             <header class="topbar">
-                <div>
-                    <p class="eyebrow">CENTRAL DE MONITORAMENTO</p>
-                    <h1>Visão executiva</h1>
-                    <p class="header-description">Telemetria hidrometeorológica, indicadores operacionais e análise preditiva.</p>
+                <div class="topbar-copy">
+                    <p class="eyebrow">CENTRO DE OPERAÇÕES HIDROMETEOROLÓGICAS</p>
+                    <h1>HydroAlert Goiás</h1>
+                    <p class="header-description">Monitoramento territorial simulado de chuva, nível da água e risco hidrológico.</p>
                 </div>
-
                 <div class="topbar-actions">
                     <div class="status-box">
                         <span id="api-status" class="status-dot"></span>
-                        <div>
-                            <small>Status da plataforma</small>
-                            <strong id="status-text">Verificando sistema...</strong>
-                        </div>
+                        <div><small>Plataforma</small><strong id="status-text">Verificando...</strong></div>
                     </div>
-                    <div class="clock-box">
-                        <small>Última atualização</small>
-                        <strong id="top-updated-at">--:--:--</strong>
-                    </div>
+                    <div class="clock-box"><small>Atualização</small><strong id="top-updated-at">--:--:--</strong></div>
                 </div>
             </header>
 
-            <main id="visao-geral">
+            <main id="operacao">
                 <section class="notice">
                     <div class="notice-icon">!</div>
-                    <div>
-                        <strong>Ambiente acadêmico de simulação</strong>
-                        <span>Os dados não substituem alertas oficiais da Defesa Civil, CEMADEN ou demais órgãos públicos.</span>
-                    </div>
+                    <div><strong>Simulação acadêmica</strong><span>Localizações e sensores desta rede são demonstrativos e não representam estações oficiais.</span></div>
                 </section>
 
-                <section class="filter-bar">
-                    <div class="filter-group">
-                        <label for="sensor-select">Ponto de monitoramento</label>
-                        <select id="sensor-select">
-                            <option value="">Todos os sensores</option>
-                        </select>
+                <section class="scope-bar">
+                    <div class="breadcrumb" id="scope-breadcrumb">
+                        <span>Brasil</span><b>›</b><span>Goiás</span><b>›</b><strong>Todo o estado</strong>
                     </div>
-                    <div class="filter-meta">
+                    <div class="scope-actions">
                         <span id="fonte-dados" class="source-pill">Fonte: --</span>
-                        <button id="refresh-btn" type="button">
-                            <span class="refresh-symbol">↻</span>
-                            Atualizar dados
-                        </button>
+                        <button id="refresh-btn" type="button"><span class="refresh-symbol">↻</span>Atualizar</button>
                     </div>
                 </section>
 
-                <section class="kpi-grid" aria-label="Indicadores principais">
-                    <article class="kpi-card accent-blue">
-                        <div class="kpi-topline">
-                            <span>Registros analisados</span>
-                            <span class="kpi-icon">#</span>
+                <section class="location-filters" aria-label="Filtros territoriais">
+                    <div class="filter-field">
+                        <label for="estado-select">Estado</label>
+                        <select id="estado-select"><option value="">Todos</option></select>
+                    </div>
+                    <div class="filter-field">
+                        <label for="municipio-select">Município</label>
+                        <select id="municipio-select"><option value="">Todos os municípios</option></select>
+                    </div>
+                    <div class="filter-field">
+                        <label for="regiao-select">Região</label>
+                        <select id="regiao-select"><option value="">Todas as regiões</option></select>
+                    </div>
+                    <div class="filter-field">
+                        <label for="bairro-select">Bairro</label>
+                        <select id="bairro-select"><option value="">Todos os bairros</option></select>
+                    </div>
+                    <div class="filter-field sensor-field">
+                        <label for="sensor-select">Sensor</label>
+                        <select id="sensor-select"><option value="">Todos os sensores</option></select>
+                    </div>
+                </section>
+
+                <section class="kpi-grid" aria-label="Indicadores territoriais">
+                    <article class="kpi-card accent-blue"><span>Registros analisados</span><strong id="total-registros">0</strong><small>Amostra do escopo atual</small></article>
+                    <article class="kpi-card accent-cyan"><span>Chuva média</span><strong><span id="chuva-media">0.00</span><em> mm</em></strong><small>Precipitação média</small></article>
+                    <article class="kpi-card accent-purple"><span>Nível médio</span><strong><span id="nivel-medio">0.000</span><em> m</em></strong><small>Altura média da água</small></article>
+                    <article class="kpi-card accent-indigo"><span>Nível máximo</span><strong><span id="nivel-maximo">0.000</span><em> m</em></strong><small>Pico observado</small></article>
+                    <article class="kpi-card accent-green"><span>Sensores com dados</span><strong id="sensores-online">0</strong><small id="sensores-total">de 0 configurados</small></article>
+                    <article class="kpi-card risk-kpi"><span>Risco atual</span><div id="risco-atual" class="risk-kpi-value">SEM DADOS</div><small id="risco-caption">Última leitura</small></article>
+                </section>
+
+                <section id="mapa" class="map-workspace">
+                    <article class="panel map-panel">
+                        <div class="panel-header map-header">
+                            <div>
+                                <p class="panel-kicker">VISÃO TERRITORIAL</p>
+                                <h2>Mapa operacional de Goiás</h2>
+                                <span id="map-subtitle">Sensores simulados e condição mais recente por localidade</span>
+                            </div>
+                            <div class="layer-switch" role="group" aria-label="Camada do mapa">
+                                <button class="layer-btn active" type="button" data-layer="risco">Risco</button>
+                                <button class="layer-btn" type="button" data-layer="chuva">Chuva</button>
+                                <button class="layer-btn" type="button" data-layer="nivel">Nível</button>
+                            </div>
                         </div>
-                        <strong id="total-registros">0</strong>
-                        <div class="kpi-footer">
-                            <span>Amostra consultada</span>
-                            <span class="micro-dot"></span>
-                        </div>
+                        <div id="hydro-map"></div>
+                        <div class="map-legend" id="map-legend"></div>
                     </article>
 
-                    <article class="kpi-card accent-cyan">
-                        <div class="kpi-topline">
-                            <span>Chuva média</span>
-                            <span class="kpi-icon">mm</span>
-                        </div>
-                        <strong><span id="chuva-media">0.00</span><small> mm</small></strong>
-                        <div class="kpi-footer">
-                            <span>Média da amostra</span>
-                            <span class="micro-dot"></span>
-                        </div>
-                    </article>
+                    <aside class="territory-side">
+                        <article class="panel territory-card">
+                            <div class="panel-header compact">
+                                <div><p class="panel-kicker">TERRITÓRIO SELECIONADO</p><h2 id="territory-title">Estado de Goiás</h2></div>
+                            </div>
+                            <div class="territory-stats">
+                                <div><span>Municípios</span><strong id="territory-cities">0</strong></div>
+                                <div><span>Bairros</span><strong id="territory-neighborhoods">0</strong></div>
+                                <div><span>Pontos</span><strong id="territory-points">0</strong></div>
+                            </div>
+                            <div class="current-location-card">
+                                <span>Escopo atual</span>
+                                <strong id="territory-scope">Goiás</strong>
+                                <small id="territory-detail">Visão estadual</small>
+                            </div>
+                        </article>
 
-                    <article class="kpi-card accent-purple">
-                        <div class="kpi-topline">
-                            <span>Nível médio</span>
-                            <span class="kpi-icon">≈</span>
-                        </div>
-                        <strong><span id="nivel-medio">0.000</span><small> m</small></strong>
-                        <div class="kpi-footer">
-                            <span>Altura média da água</span>
-                            <span class="micro-dot"></span>
-                        </div>
-                    </article>
+                        <article class="panel alert-panel">
+                            <div class="panel-header compact"><div><p class="panel-kicker">PRIORIDADE OPERACIONAL</p><h2>Alertas da rede</h2></div><span class="metric-tag">simulado</span></div>
+                            <div id="alerts-list" class="alerts-list"><div class="empty-state">Aguardando dados...</div></div>
+                        </article>
+                    </aside>
+                </section>
 
-                    <article class="kpi-card accent-indigo">
-                        <div class="kpi-topline">
-                            <span>Nível máximo</span>
-                            <span class="kpi-icon">↑</span>
+                <section class="selected-point panel" id="selected-point-panel">
+                    <div class="selected-point-head">
+                        <div>
+                            <p class="panel-kicker">PONTO EM DESTAQUE</p>
+                            <h2 id="point-name">Selecione um ponto no mapa</h2>
+                            <span id="point-location">Clique em um sensor para visualizar detalhes.</span>
                         </div>
-                        <strong><span id="nivel-maximo">0.000</span><small> m</small></strong>
-                        <div class="kpi-footer">
-                            <span>Pico observado</span>
-                            <span class="micro-dot"></span>
-                        </div>
-                    </article>
-
-                    <article class="kpi-card risk-kpi">
-                        <div class="kpi-topline">
-                            <span>Risco atual</span>
-                            <span class="kpi-icon">!</span>
-                        </div>
-                        <div id="risco-atual" class="risk-kpi-value">SEM DADOS</div>
-                        <div class="kpi-footer">
-                            <span>Última leitura</span>
-                            <span id="risco-caption">Aguardando dados</span>
-                        </div>
-                    </article>
+                        <span id="point-risk" class="status-chip neutral">--</span>
+                    </div>
+                    <div class="point-metrics">
+                        <div><span>Nível</span><strong id="point-level">--</strong></div>
+                        <div><span>Chuva</span><strong id="point-rain">--</strong></div>
+                        <div><span>Tendência</span><strong id="point-trend">--</strong></div>
+                        <div><span>Última leitura</span><strong id="point-time">--</strong></div>
+                        <div><span>Status</span><strong id="point-status">--</strong></div>
+                    </div>
                 </section>
 
                 <section id="analises" class="analytics-grid">
-                    <article class="panel trend-panel span-8">
-                        <div class="panel-header">
-                            <div>
-                                <p class="panel-kicker">SÉRIE TEMPORAL</p>
-                                <h2>Evolução do nível da água</h2>
-                                <span>Comportamento das últimas leituras disponíveis</span>
-                            </div>
-                            <div class="panel-legend">
-                                <span><i class="legend-dot blue"></i>Nível (m)</span>
-                            </div>
-                        </div>
+                    <article class="panel span-8">
+                        <div class="panel-header"><div><p class="panel-kicker">SÉRIE TEMPORAL</p><h2>Evolução do nível da água</h2><span>Leituras do território filtrado</span></div></div>
                         <div class="chart-wrap chart-large"><canvas id="nivel-chart"></canvas></div>
                     </article>
-
-                    <article class="panel snapshot-panel span-4">
-                        <div class="panel-header compact">
-                            <div>
-                                <p class="panel-kicker">LEITURA MAIS RECENTE</p>
-                                <h2>Condição atual</h2>
-                            </div>
-                            <span id="snapshot-risk" class="status-chip neutral">--</span>
-                        </div>
-                        <div class="snapshot-main">
-                            <div class="water-gauge">
-                                <div class="water-gauge-ring">
-                                    <strong id="snapshot-level">0.000</strong>
-                                    <span>metros</span>
-                                </div>
-                            </div>
-                            <div class="snapshot-data">
-                                <div><span>Sensor</span><strong id="snapshot-sensor">--</strong></div>
-                                <div><span>Chuva</span><strong id="snapshot-rain">0.00 mm</strong></div>
-                                <div><span>Tendência</span><strong id="snapshot-trend">--</strong></div>
-                                <div><span>Horário</span><strong id="snapshot-time">--</strong></div>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="panel span-5">
-                        <div class="panel-header">
-                            <div>
-                                <p class="panel-kicker">PRECIPITAÇÃO</p>
-                                <h2>Chuva por leitura</h2>
-                                <span>Volume registrado em milímetros</span>
-                            </div>
-                            <span class="metric-tag">mm / leitura</span>
-                        </div>
-                        <div class="chart-wrap"><canvas id="chuva-chart"></canvas></div>
-                    </article>
-
-                    <article class="panel span-3">
-                        <div class="panel-header">
-                            <div>
-                                <p class="panel-kicker">CLASSIFICAÇÃO</p>
-                                <h2>Distribuição de risco</h2>
-                                <span>Amostra atual</span>
-                            </div>
-                        </div>
-                        <div class="risk-chart-layout">
-                            <div class="risk-donut-wrap">
-                                <canvas id="risk-chart"></canvas>
-                                <div class="risk-donut-center">
-                                    <strong id="risk-total">0</strong>
-                                    <span>leituras</span>
-                                </div>
-                            </div>
-                            <div id="risk-list" class="risk-list"></div>
-                        </div>
-                    </article>
-
                     <article class="panel span-4">
-                        <div class="panel-header">
-                            <div>
-                                <p class="panel-kicker">COMPARATIVO</p>
-                                <h2>Nível por sensor</h2>
-                                <span>Média por ponto monitorado</span>
-                            </div>
-                        </div>
+                        <div class="panel-header"><div><p class="panel-kicker">PRECIPITAÇÃO</p><h2>Chuva por leitura</h2><span>Volume em milímetros</span></div></div>
+                        <div class="chart-wrap chart-large"><canvas id="chuva-chart"></canvas></div>
+                    </article>
+                    <article class="panel span-4">
+                        <div class="panel-header"><div><p class="panel-kicker">CLASSIFICAÇÃO</p><h2>Distribuição de risco</h2><span>Amostra atual</span></div></div>
+                        <div class="risk-chart-layout"><div class="risk-donut-wrap"><canvas id="risk-chart"></canvas><div class="risk-donut-center"><strong id="risk-total">0</strong><span>leituras</span></div></div><div id="risk-list" class="risk-list"></div></div>
+                    </article>
+                    <article class="panel span-4">
+                        <div class="panel-header"><div><p class="panel-kicker">COMPARAÇÃO TERRITORIAL</p><h2>Nível por sensor</h2><span>Média dos pontos selecionados</span></div></div>
                         <div class="chart-wrap"><canvas id="sensor-chart"></canvas></div>
+                    </article>
+                    <article class="panel span-4">
+                        <div class="panel-header"><div><p class="panel-kicker">LOCALIDADES</p><h2>Registros por município</h2><span>Distribuição da amostra</span></div></div>
+                        <div class="chart-wrap"><canvas id="city-chart"></canvas></div>
                     </article>
                 </section>
 
                 <section id="machine-learning" class="intelligence-grid">
                     <article class="panel ml-panel">
-                        <div class="panel-header">
-                            <div>
-                                <p class="panel-kicker">INTELIGÊNCIA ARTIFICIAL</p>
-                                <h2>Machine Learning</h2>
-                                <span>Motor preditivo do HydroAlert AI</span>
-                            </div>
-                            <span class="metric-tag">Etapa 6</span>
-                        </div>
+                        <div class="panel-header"><div><p class="panel-kicker">INTELIGÊNCIA ARTIFICIAL</p><h2>Previsão e Machine Learning</h2><span>Motor preditivo do HydroAlert</span></div><span class="metric-tag">Etapa 6</span></div>
                         <div id="ml-box" class="ml-box">Verificando modelo...</div>
                     </article>
-
                     <article class="panel system-panel">
-                        <div class="panel-header">
-                            <div>
-                                <p class="panel-kicker">INFRAESTRUTURA</p>
-                                <h2>Saúde do sistema</h2>
-                                <span>Componentes da arquitetura</span>
-                            </div>
-                        </div>
+                        <div class="panel-header"><div><p class="panel-kicker">INFRAESTRUTURA</p><h2>Saúde da plataforma</h2><span>Componentes conectados</span></div></div>
                         <div class="system-status-list">
                             <div class="system-row"><span><i class="system-dot online"></i>FastAPI</span><strong>Online</strong></div>
                             <div class="system-row"><span><i id="mongo-dot" class="system-dot"></i>MongoDB</span><strong id="mongo-status">Verificando</strong></div>
-                            <div class="system-row"><span><i class="system-dot online"></i>Dashboard</span><strong>Online</strong></div>
+                            <div class="system-row"><span><i class="system-dot online"></i>Mapa territorial</span><strong>Online</strong></div>
                             <div class="system-row"><span><i id="ml-dot" class="system-dot"></i>Modelo ML</span><strong id="ml-status-mini">Verificando</strong></div>
                         </div>
                     </article>
                 </section>
 
                 <section id="telemetria" class="panel table-panel">
-                    <div class="panel-header table-heading">
-                        <div>
-                            <p class="panel-kicker">DETALHAMENTO</p>
-                            <h2>Telemetria recente</h2>
-                            <span>Últimos registros disponíveis na fonte selecionada</span>
-                        </div>
-                        <span id="updated-at" class="metric-tag">--</span>
-                    </div>
+                    <div class="panel-header table-heading"><div><p class="panel-kicker">DETALHAMENTO</p><h2>Telemetria recente</h2><span>Registros do escopo territorial selecionado</span></div><span id="updated-at" class="metric-tag">--</span></div>
                     <div class="table-scroll">
                         <table>
-                            <thead>
-                                <tr>
-                                    <th>Data / Hora</th>
-                                    <th>Sensor</th>
-                                    <th>Chuva</th>
-                                    <th>Nível</th>
-                                    <th>Tendência</th>
-                                    <th>Risco</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Data / Hora</th><th>Município</th><th>Bairro</th><th>Sensor</th><th>Chuva</th><th>Nível</th><th>Tendência</th><th>Risco</th></tr></thead>
                             <tbody id="telemetry-body"></tbody>
                         </table>
                     </div>
                 </section>
 
-                <footer class="dashboard-footer">
-                    <span>HydroAlert AI • Projeto Integrador</span>
-                    <span>IoT → MQTT → MongoDB → FastAPI → Dashboard → Machine Learning</span>
-                </footer>
+                <footer class="dashboard-footer"><span>HydroAlert AI • Projeto Integrador</span><span>IoT → MQTT → MongoDB → FastAPI → Geointeligência → Machine Learning</span></footer>
             </main>
         </div>
     </div>
