@@ -6,28 +6,28 @@ Protótipo acadêmico de **alerta preditivo de inundações urbanas** que integr
 
 ## Visão geral
 
-O HydroAlert AI foi criado para demonstrar um fluxo completo de monitoramento hidrometeorológico, desde a geração dos dados dos sensores até a visualização e análise preditiva.
+O HydroAlert AI demonstra um fluxo completo de monitoramento hidrometeorológico, desde a geração de dados dos sensores até armazenamento, API, visualização e análise preditiva.
 
-O sistema é capaz de:
+O sistema já consegue:
 
 - simular sensores de chuva e nível da água;
 - transmitir telemetria em tempo real via MQTT;
-- receber e armazenar dados localmente e no MongoDB;
+- receber e persistir dados em JSONL e MongoDB;
 - disponibilizar os dados por uma API REST com FastAPI;
 - exibir indicadores e gráficos em um Dashboard Web;
-- preparar séries temporais para Data Science;
-- treinar um modelo de Machine Learning para previsão do próximo nível da água.
+- compartilhar temporariamente o Dashboard pela internet com Cloudflare Quick Tunnel;
+- preparar os dados para Data Science e Machine Learning.
 
-## Arquitetura
+## Arquitetura atual
 
 ```text
-Sensores simulados em Python
+Sensores simulados Python
           ↓
-   Paho MQTT Publisher
+Paho MQTT Publisher
           ↓
- Eclipse Mosquitto :1883
+Eclipse Mosquitto :1883
           ↓
-  Paho MQTT Subscriber
+Paho MQTT Subscriber
        ↙           ↘
  JSONL local      MongoDB :27017
                      ↓
@@ -36,6 +36,9 @@ Sensores simulados em Python
              Dashboard Web
                      ↓
           Data Science + ML
+
+Compartilhamento de teste:
+Dashboard local → Cloudflare Quick Tunnel → Link público temporário
 ```
 
 ## Status do projeto
@@ -44,13 +47,13 @@ Sensores simulados em Python
 |---|---|---|
 | 1 | Simulador IoT | ✅ Validada |
 | 2 | MQTT + Mosquitto | ✅ Validada |
-| 3 | MongoDB | 🧪 Implementada — validação local pendente |
-| 4 | FastAPI | 🧪 Implementada — validação local pendente |
-| 5 | Dashboard Web | 🧪 Implementada — validação local pendente |
+| 3 | MongoDB | ✅ Validada |
+| 4 | FastAPI | ✅ Validada |
+| 5 | Dashboard Web | ✅ Validada |
 | 6 | Data Science + Machine Learning | 🧪 Baseline implementado — treino e validação pendentes |
 | 7 | Previsão de 1h, 3h e 6h | ⏳ Planejada |
 | 8 | Mapa Leaflet/OpenStreetMap | ⏳ Planejada |
-| 9 | Copiloto com LLM/NLP | ⏳ Planejada |
+| 9 | Alertas inteligentes / LLM | ⏳ Planejada |
 | 10 | Revisão humana | ⏳ Planejada |
 | 11 | Power BI + backtesting | ⏳ Planejada |
 
@@ -67,145 +70,51 @@ Sensores simulados em Python
 - Pandas
 - Scikit-learn
 - Joblib
+- Cloudflare Quick Tunnel
+- Git / GitHub
 
-## Estrutura do projeto
+## Documentação
 
-```text
-HydroAlert-AI/
-├── api/
-│   └── main.py
-├── dashboard/
-│   ├── index.html
-│   ├── styles.css
-│   └── app.js
-├── database/
-│   └── mongodb.py
-├── data/
-├── docs/
-│   ├── ETAPA_01_IOT.md
-│   ├── ETAPA_02_MQTT.md
-│   ├── ETAPA_03_MONGODB.md
-│   ├── ETAPA_04_FASTAPI.md
-│   ├── ETAPA_05_DASHBOARD.md
-│   └── ETAPA_06_DATA_SCIENCE_ML.md
-├── iot/
-│   ├── config.py
-│   ├── sensor_simulator.py
-│   ├── mqtt_publisher.py
-│   └── mqtt_subscriber.py
-├── ml/
-│   ├── features.py
-│   ├── model_service.py
-│   └── train_model.py
-├── models/
-├── services/
-│   └── telemetry_service.py
-├── tests/
-├── requirements.txt
-└── README.md
-```
+A documentação detalhada está em `docs/`.
 
-## Como executar no Visual Studio Code
+- `docs/ETAPA_01_IOT.md`
+- `docs/ETAPA_02_MQTT.md`
+- `docs/ETAPA_03_MONGODB.md`
+- `docs/ETAPA_04_FASTAPI.md`
+- `docs/ETAPA_05_DASHBOARD.md`
+- `docs/ETAPA_06_DATA_SCIENCE_ML.md`
+- **`docs/GUIA_COMPLETO_EXECUCAO_E_COMPARTILHAMENTO.md`** — instalação, execução, Git/GitHub, MongoDB, MQTT, FastAPI e compartilhamento público.
 
-### 1. Clonar o projeto
+## Instalação rápida no Visual Studio Code
 
 ```powershell
 git clone https://github.com/Abnerrum/HydroAlert-AI.git
 cd HydroAlert-AI
-```
-
-### 2. Baixar as alterações e entrar na branch atual
-
-```powershell
-git fetch origin
-git switch etapas-03-a-06
-```
-
-### 3. Criar o ambiente virtual
-
-```powershell
+git switch main
 python -m venv .venv
-```
-
-### 4. Ativar o ambiente no PowerShell
-
-```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
-```
-
-### 5. Instalar as dependências
-
-```powershell
 python -m pip install -r requirements.txt
 ```
 
-## Etapa 1 — Simulador IoT
+## Executar o sistema
 
-Executar cinco ciclos de teste:
-
-```powershell
-python -m iot.sensor_simulator --ciclos 5
-```
-
-Os dados são gravados em:
-
-```text
-data/telemetria.jsonl
-```
-
-Cada leitura contém informações como chuva, nível da água, tendência e classificação de risco.
-
-## Etapa 2 — MQTT
-
-O broker utilizado no desenvolvimento é o Eclipse Mosquitto em:
-
-```text
-localhost:1883
-```
-
-### Terminal 1 — Subscriber
+### Terminal 1 — Subscriber MQTT + MongoDB
 
 ```powershell
 python -m iot.mqtt_subscriber
 ```
 
-### Terminal 2 — Publisher
+### Terminal 2 — Publisher dos sensores
 
 ```powershell
 python -m iot.mqtt_publisher --ciclos 10
 ```
 
-Fluxo:
-
-```text
-Publisher → Mosquitto → Subscriber → mqtt_recebido.jsonl
-```
-
-## Etapa 3 — MongoDB
-
-O subscriber tenta salvar cada mensagem recebida no banco:
-
-```text
-Database:   hydroalert_ai
-Collection: telemetria
-URI padrão: mongodb://localhost:27017/
-```
-
-Se o MongoDB estiver indisponível, o sistema continua salvando os dados no JSONL local.
-
-Documentação detalhada:
-
-```text
-docs/ETAPA_03_MONGODB.md
-```
-
-## Etapa 4 — FastAPI
-
-Inicie a API:
+### Terminal 3 — FastAPI + Dashboard
 
 ```powershell
-python -m uvicorn api.main:app --reload
+python -m uvicorn api.main:app --host 127.0.0.1 --port 8000
 ```
 
 Acesse:
@@ -216,94 +125,62 @@ Swagger:   http://127.0.0.1:8000/docs
 Health:    http://127.0.0.1:8000/health
 ```
 
-Endpoints principais:
+## MongoDB
+
+Instalação pelo PowerShell como Administrador:
+
+```powershell
+winget install --id MongoDB.Server -e --accept-source-agreements --accept-package-agreements
+```
+
+Verificar:
+
+```powershell
+Get-Service MongoDB
+Test-NetConnection localhost -Port 27017
+```
+
+Configuração padrão do projeto:
 
 ```text
-GET /api/sensores
-GET /api/telemetria
-GET /api/resumo
-GET /api/ml/status
-GET /api/ml/prever/{sensor_id}
+mongodb://localhost:27017/
+Database: hydroalert_ai
+Collection: telemetria
 ```
 
-## Etapa 5 — Dashboard Web
+## Compartilhar o Dashboard pela internet
 
-O Dashboard apresenta:
+Com o FastAPI rodando na porta 8000, execute o Cloudflare Quick Tunnel em outro terminal:
 
-- quantidade de leituras;
-- quantidade de sensores;
-- nível médio;
-- chuva acumulada;
-- maior nível registrado;
-- distribuição dos níveis de risco;
-- gráfico de nível da água;
-- gráfico de chuva;
-- filtro por sensor;
-- tabela das leituras recentes;
-- status do MongoDB;
-- status do modelo de Machine Learning.
+```powershell
+& "$env:USERPROFILE\cloudflared\cloudflared.exe" tunnel --url http://127.0.0.1:8000
+```
 
-Para visualizar, mantenha a API rodando e abra:
+O terminal exibirá um endereço semelhante a:
 
 ```text
-http://127.0.0.1:8000
+https://nome-aleatorio.trycloudflare.com
 ```
 
-## Etapa 6 — Data Science e Machine Learning
+Esse link pode ser compartilhado com outras pessoas enquanto o FastAPI, o computador e o túnel permanecerem ligados.
 
-O primeiro baseline usa **RandomForestRegressor** para estimar o próximo nível da água com base em variáveis como:
+> O endereço é temporário e normalmente muda quando um novo Quick Tunnel é criado.
 
-- chuva atual;
-- nível atual;
-- variação do nível;
-- cotas de atenção, alerta e nível crítico.
+## Sincronização VS Code ↔ GitHub
 
-Para gerar uma base maior:
+Trazer alterações do GitHub:
 
 ```powershell
-python -m iot.mqtt_publisher --ciclos 100 --intervalo 0.2
+git switch main
+git pull origin main
 ```
 
-Treinar o modelo:
+Enviar alterações locais:
 
 ```powershell
-python -m ml.train_model
-```
-
-O modelo treinado é salvo localmente em:
-
-```text
-models/modelo_nivel.joblib
-```
-
-A métrica inicial utilizada é **MAE — Mean Absolute Error**, medida em metros.
-
-## Demonstração completa
-
-Com Mosquitto e MongoDB em execução, abra três terminais.
-
-### Terminal 1
-
-```powershell
-python -m iot.mqtt_subscriber
-```
-
-### Terminal 2
-
-```powershell
-python -m iot.mqtt_publisher --ciclos 100 --intervalo 1
-```
-
-### Terminal 3
-
-```powershell
-python -m uvicorn api.main:app --reload
-```
-
-Depois acesse:
-
-```text
-http://127.0.0.1:8000
+git add .
+git commit -m "Atualiza HydroAlert AI"
+git push origin main
 ```
 
 ## Testes automatizados
@@ -314,21 +191,13 @@ python -m unittest discover -s tests -v
 
 ## Próximas evoluções
 
-A próxima fase do projeto será focada em previsão temporal mais próxima de um cenário real:
-
-1. previsão explícita de risco para 1h, 3h e 6h;
-2. mapa interativo com Leaflet e OpenStreetMap;
-3. cálculo de áreas expostas;
-4. backtesting por evento de chuva;
-5. métricas de falso alarme e antecedência do alerta;
-6. integração com Power BI;
-7. módulo de IA/LLM para apoio à interpretação dos dados;
-8. fluxo de revisão humana antes da emissão de alertas.
-
-## Finalidade acadêmica
-
-O HydroAlert AI é um projeto de estudo voltado à integração de **IoT, bancos NoSQL, APIs, visualização de dados, Data Science e Inteligência Artificial** em um cenário de prevenção de inundações urbanas.
+1. finalizar e validar o modelo de Machine Learning;
+2. previsão de nível/risco para 1h, 3h e 6h;
+3. mapa interativo com Leaflet e OpenStreetMap;
+4. alertas automáticos por risco;
+5. revisão humana para alertas críticos;
+6. Power BI e backtesting por evento de chuva.
 
 ---
 
-Desenvolvido como Projeto Integrador — HydroAlert AI.
+**Projeto Integrador — HydroAlert AI**
