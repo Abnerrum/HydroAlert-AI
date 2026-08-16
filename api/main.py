@@ -8,14 +8,15 @@ from database.mongodb import status_mongodb
 from iot.config import SENSORES
 from ml.model_service import prever_proximo_nivel, status_modelo
 from services.telemetry_service import calcular_resumo, obter_telemetria
+from services.territory_service import catalogo_localidades, montar_painel_territorial
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 DASHBOARD_DIR = BASE_DIR / "dashboard"
 
 app = FastAPI(
     title="HydroAlert AI API",
-    description="API academica para telemetria hidrometeorologica e ML.",
-    version="0.6.0",
+    description="API academica para telemetria hidrometeorologica, analise territorial e ML.",
+    version="0.7.0",
 )
 
 app.mount("/static", StaticFiles(directory=str(DASHBOARD_DIR)), name="static")
@@ -32,12 +33,37 @@ def health():
         "status": "ok",
         "mongodb": status_mongodb(),
         "machine_learning": status_modelo(),
+        "sensores_configurados": len(SENSORES),
     }
 
 
 @app.get("/api/sensores")
 def sensores():
     return {"sensores": SENSORES}
+
+
+@app.get("/api/localidades")
+def localidades():
+    return catalogo_localidades()
+
+
+@app.get("/api/painel")
+def painel(
+    estado: str | None = None,
+    municipio: str | None = None,
+    regiao: str | None = None,
+    bairro: str | None = None,
+    sensor_id: str | None = None,
+    limite: int = Query(default=300, ge=1, le=1000),
+):
+    return montar_painel_territorial(
+        estado=estado,
+        municipio=municipio,
+        regiao=regiao,
+        bairro=bairro,
+        sensor_id=sensor_id,
+        limite=limite,
+    )
 
 
 @app.get("/api/telemetria")
