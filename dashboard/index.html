@@ -3,114 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HydroAlert AI</title>
+    <meta name="theme-color" content="#08111f">
+    <title>HydroAlert AI | Command Center</title>
     <link rel="stylesheet" href="/static/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <header class="topbar">
-        <div>
-            <p class="eyebrow">PROJETO INTEGRADOR</p>
-            <h1>HydroAlert AI</h1>
-            <p>Monitoramento hidrometeorológico simulado com IoT, MQTT, MongoDB, API e Machine Learning.</p>
-        </div>
-        <div class="status-box">
-            <span id="api-status" class="status-dot"></span>
-            <span id="status-text">Verificando sistema...</span>
-        </div>
-    </header>
-
-    <main>
-        <section class="notice">
-            Dados simulados para fins acadêmicos. Este sistema não substitui alertas oficiais da Defesa Civil, CEMADEN ou órgãos públicos.
-        </section>
-
-        <section class="toolbar">
-            <label for="sensor-select">Sensor</label>
-            <select id="sensor-select">
-                <option value="">Todos os sensores</option>
-            </select>
-            <button id="refresh-btn">Atualizar agora</button>
-            <span id="fonte-dados">Fonte: --</span>
-        </section>
-
-        <section class="cards">
-            <article class="card">
-                <span>Registros analisados</span>
-                <strong id="total-registros">0</strong>
-            </article>
-            <article class="card">
-                <span>Chuva média</span>
-                <strong><span id="chuva-media">0.00</span> mm</strong>
-            </article>
-            <article class="card">
-                <span>Nível máximo</span>
-                <strong><span id="nivel-maximo">0.000</span> m</strong>
-            </article>
-            <article class="card">
-                <span>Risco atual</span>
-                <strong id="risco-atual">SEM DADOS</strong>
-            </article>
-        </section>
-
-        <section class="grid">
-            <article class="panel">
-                <div class="panel-header">
-                    <h2>Nível da água</h2>
-                    <span>últimas leituras</span>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2.8c-3.3 4.1-6.5 7.4-6.5 11.1A6.5 6.5 0 0 0 12 20.4a6.5 6.5 0 0 0 6.5-6.5C18.5 10.2 15.3 6.9 12 2.8Z"/>
+                        <path class="brand-wave" d="M8.3 14.5c1.2-.8 2.5-.8 3.7 0 1.2.8 2.5.8 3.7 0"/>
+                    </svg>
                 </div>
-                <div class="chart-wrap"><canvas id="nivel-chart"></canvas></div>
-            </article>
-
-            <article class="panel">
-                <div class="panel-header">
-                    <h2>Chuva</h2>
-                    <span>mm por leitura</span>
+                <div>
+                    <strong>HydroAlert</strong>
+                    <span>AI Command Center</span>
                 </div>
-                <div class="chart-wrap"><canvas id="chuva-chart"></canvas></div>
-            </article>
-        </section>
-
-        <section class="grid lower-grid">
-            <article class="panel">
-                <div class="panel-header">
-                    <h2>Machine Learning</h2>
-                    <span>Etapa 6</span>
-                </div>
-                <div id="ml-box" class="ml-box">Verificando modelo...</div>
-            </article>
-
-            <article class="panel">
-                <div class="panel-header">
-                    <h2>Distribuição de risco</h2>
-                    <span>amostra atual</span>
-                </div>
-                <div id="risk-list" class="risk-list"></div>
-            </article>
-        </section>
-
-        <section class="panel table-panel">
-            <div class="panel-header">
-                <h2>Telemetria recente</h2>
-                <span id="updated-at">--</span>
             </div>
-            <div class="table-scroll">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Data/Hora</th>
-                            <th>Sensor</th>
-                            <th>Chuva</th>
-                            <th>Nível</th>
-                            <th>Tendência</th>
-                            <th>Risco</th>
-                        </tr>
-                    </thead>
-                    <tbody id="telemetry-body"></tbody>
-                </table>
+
+            <nav class="sidebar-nav" aria-label="Navegação do dashboard">
+                <a class="nav-item active" href="#visao-geral">
+                    <span class="nav-icon">01</span>
+                    <span>Visão geral</span>
+                </a>
+                <a class="nav-item" href="#analises">
+                    <span class="nav-icon">02</span>
+                    <span>Análises</span>
+                </a>
+                <a class="nav-item" href="#machine-learning">
+                    <span class="nav-icon">03</span>
+                    <span>Machine Learning</span>
+                </a>
+                <a class="nav-item" href="#telemetria">
+                    <span class="nav-icon">04</span>
+                    <span>Telemetria</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <span class="footer-label">Projeto Integrador</span>
+                <strong>Etapas 1–5 validadas</strong>
+                <small>Monitoramento acadêmico</small>
             </div>
-        </section>
-    </main>
+        </aside>
+
+        <div class="workspace">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">CENTRAL DE MONITORAMENTO</p>
+                    <h1>Visão executiva</h1>
+                    <p class="header-description">Telemetria hidrometeorológica, indicadores operacionais e análise preditiva.</p>
+                </div>
+
+                <div class="topbar-actions">
+                    <div class="status-box">
+                        <span id="api-status" class="status-dot"></span>
+                        <div>
+                            <small>Status da plataforma</small>
+                            <strong id="status-text">Verificando sistema...</strong>
+                        </div>
+                    </div>
+                    <div class="clock-box">
+                        <small>Última atualização</small>
+                        <strong id="top-updated-at">--:--:--</strong>
+                    </div>
+                </div>
+            </header>
+
+            <main id="visao-geral">
+                <section class="notice">
+                    <div class="notice-icon">!</div>
+                    <div>
+                        <strong>Ambiente acadêmico de simulação</strong>
+                        <span>Os dados não substituem alertas oficiais da Defesa Civil, CEMADEN ou demais órgãos públicos.</span>
+                    </div>
+                </section>
+
+                <section class="filter-bar">
+                    <div class="filter-group">
+                        <label for="sensor-select">Ponto de monitoramento</label>
+                        <select id="sensor-select">
+                            <option value="">Todos os sensores</option>
+                        </select>
+                    </div>
+                    <div class="filter-meta">
+                        <span id="fonte-dados" class="source-pill">Fonte: --</span>
+                        <button id="refresh-btn" type="button">
+                            <span class="refresh-symbol">↻</span>
+                            Atualizar dados
+                        </button>
+                    </div>
+                </section>
+
+                <section class="kpi-grid" aria-label="Indicadores principais">
+                    <article class="kpi-card accent-blue">
+                        <div class="kpi-topline">
+                            <span>Registros analisados</span>
+                            <span class="kpi-icon">#</span>
+                        </div>
+                        <strong id="total-registros">0</strong>
+                        <div class="kpi-footer">
+                            <span>Amostra consultada</span>
+                            <span class="micro-dot"></span>
+                        </div>
+                    </article>
+
+                    <article class="kpi-card accent-cyan">
+                        <div class="kpi-topline">
+                            <span>Chuva média</span>
+                            <span class="kpi-icon">mm</span>
+                        </div>
+                        <strong><span id="chuva-media">0.00</span><small> mm</small></strong>
+                        <div class="kpi-footer">
+                            <span>Média da amostra</span>
+                            <span class="micro-dot"></span>
+                        </div>
+                    </article>
+
+                    <article class="kpi-card accent-purple">
+                        <div class="kpi-topline">
+                            <span>Nível médio</span>
+                            <span class="kpi-icon">≈</span>
+                        </div>
+                        <strong><span id="nivel-medio">0.000</span><small> m</small></strong>
+                        <div class="kpi-footer">
+                            <span>Altura média da água</span>
+                            <span class="micro-dot"></span>
+                        </div>
+                    </article>
+
+                    <article class="kpi-card accent-indigo">
+                        <div class="kpi-topline">
+                            <span>Nível máximo</span>
+                            <span class="kpi-icon">↑</span>
+                        </div>
+                        <strong><span id="nivel-maximo">0.000</span><small> m</small></strong>
+                        <div class="kpi-footer">
+                            <span>Pico observado</span>
+                            <span class="micro-dot"></span>
+                        </div>
+                    </article>
+
+                    <article class="kpi-card risk-kpi">
+                        <div class="kpi-topline">
+                            <span>Risco atual</span>
+                            <span class="kpi-icon">!</span>
+                        </div>
+                        <div id="risco-atual" class="risk-kpi-value">SEM DADOS</div>
+                        <div class="kpi-footer">
+                            <span>Última leitura</span>
+                            <span id="risco-caption">Aguardando dados</span>
+                        </div>
+                    </article>
+                </section>
+
+                <section id="analises" class="analytics-grid">
+                    <article class="panel trend-panel span-8">
+                        <div class="panel-header">
+                            <div>
+                                <p class="panel-kicker">SÉRIE TEMPORAL</p>
+                                <h2>Evolução do nível da água</h2>
+                                <span>Comportamento das últimas leituras disponíveis</span>
+                            </div>
+                            <div class="panel-legend">
+                                <span><i class="legend-dot blue"></i>Nível (m)</span>
+                            </div>
+                        </div>
+                        <div class="chart-wrap chart-large"><canvas id="nivel-chart"></canvas></div>
+                    </article>
+
+                    <article class="panel snapshot-panel span-4">
+                        <div class="panel-header compact">
+                            <div>
+                                <p class="panel-kicker">LEITURA MAIS RECENTE</p>
+                                <h2>Condição atual</h2>
+                            </div>
+                            <span id="snapshot-risk" class="status-chip neutral">--</span>
+                        </div>
+                        <div class="snapshot-main">
+                            <div class="water-gauge">
+                                <div class="water-gauge-ring">
+                                    <strong id="snapshot-level">0.000</strong>
+                                    <span>metros</span>
+                                </div>
+                            </div>
+                            <div class="snapshot-data">
+                                <div><span>Sensor</span><strong id="snapshot-sensor">--</strong></div>
+                                <div><span>Chuva</span><strong id="snapshot-rain">0.00 mm</strong></div>
+                                <div><span>Tendência</span><strong id="snapshot-trend">--</strong></div>
+                                <div><span>Horário</span><strong id="snapshot-time">--</strong></div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="panel span-5">
+                        <div class="panel-header">
+                            <div>
+                                <p class="panel-kicker">PRECIPITAÇÃO</p>
+                                <h2>Chuva por leitura</h2>
+                                <span>Volume registrado em milímetros</span>
+                            </div>
+                            <span class="metric-tag">mm / leitura</span>
+                        </div>
+                        <div class="chart-wrap"><canvas id="chuva-chart"></canvas></div>
+                    </article>
+
+                    <article class="panel span-3">
+                        <div class="panel-header">
+                            <div>
+                                <p class="panel-kicker">CLASSIFICAÇÃO</p>
+                                <h2>Distribuição de risco</h2>
+                                <span>Amostra atual</span>
+                            </div>
+                        </div>
+                        <div class="risk-chart-layout">
+                            <div class="risk-donut-wrap">
+                                <canvas id="risk-chart"></canvas>
+                                <div class="risk-donut-center">
+                                    <strong id="risk-total">0</strong>
+                                    <span>leituras</span>
+                                </div>
+                            </div>
+                            <div id="risk-list" class="risk-list"></div>
+                        </div>
+                    </article>
+
+                    <article class="panel span-4">
+                        <div class="panel-header">
+                            <div>
+                                <p class="panel-kicker">COMPARATIVO</p>
+                                <h2>Nível por sensor</h2>
+                                <span>Média por ponto monitorado</span>
+                            </div>
+                        </div>
+                        <div class="chart-wrap"><canvas id="sensor-chart"></canvas></div>
+                    </article>
+                </section>
+
+                <section id="machine-learning" class="intelligence-grid">
+                    <article class="panel ml-panel">
+                        <div class="panel-header">
+                            <div>
+                                <p class="panel-kicker">INTELIGÊNCIA ARTIFICIAL</p>
+                                <h2>Machine Learning</h2>
+                                <span>Motor preditivo do HydroAlert AI</span>
+                            </div>
+                            <span class="metric-tag">Etapa 6</span>
+                        </div>
+                        <div id="ml-box" class="ml-box">Verificando modelo...</div>
+                    </article>
+
+                    <article class="panel system-panel">
+                        <div class="panel-header">
+                            <div>
+                                <p class="panel-kicker">INFRAESTRUTURA</p>
+                                <h2>Saúde do sistema</h2>
+                                <span>Componentes da arquitetura</span>
+                            </div>
+                        </div>
+                        <div class="system-status-list">
+                            <div class="system-row"><span><i class="system-dot online"></i>FastAPI</span><strong>Online</strong></div>
+                            <div class="system-row"><span><i id="mongo-dot" class="system-dot"></i>MongoDB</span><strong id="mongo-status">Verificando</strong></div>
+                            <div class="system-row"><span><i class="system-dot online"></i>Dashboard</span><strong>Online</strong></div>
+                            <div class="system-row"><span><i id="ml-dot" class="system-dot"></i>Modelo ML</span><strong id="ml-status-mini">Verificando</strong></div>
+                        </div>
+                    </article>
+                </section>
+
+                <section id="telemetria" class="panel table-panel">
+                    <div class="panel-header table-heading">
+                        <div>
+                            <p class="panel-kicker">DETALHAMENTO</p>
+                            <h2>Telemetria recente</h2>
+                            <span>Últimos registros disponíveis na fonte selecionada</span>
+                        </div>
+                        <span id="updated-at" class="metric-tag">--</span>
+                    </div>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data / Hora</th>
+                                    <th>Sensor</th>
+                                    <th>Chuva</th>
+                                    <th>Nível</th>
+                                    <th>Tendência</th>
+                                    <th>Risco</th>
+                                </tr>
+                            </thead>
+                            <tbody id="telemetry-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <footer class="dashboard-footer">
+                    <span>HydroAlert AI • Projeto Integrador</span>
+                    <span>IoT → MQTT → MongoDB → FastAPI → Dashboard → Machine Learning</span>
+                </footer>
+            </main>
+        </div>
+    </div>
 
     <script src="/static/app.js"></script>
 </body>
