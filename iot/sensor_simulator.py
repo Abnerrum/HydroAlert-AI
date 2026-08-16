@@ -74,8 +74,11 @@ def gerar_leitura(sensor: dict, niveis: dict[str, float]) -> dict:
         "localizacao": {
             "latitude": sensor["latitude"],
             "longitude": sensor["longitude"],
-            "municipio": "Goiania",
-            "uf": "GO",
+            "estado": sensor["estado"],
+            "uf": sensor["uf"],
+            "municipio": sensor["municipio"],
+            "regiao": sensor["regiao"],
+            "bairro": sensor["bairro"],
         },
         "chuva_mm": chuva_mm,
         "nivel_m": nivel_atual,
@@ -97,9 +100,11 @@ def salvar_leitura(leitura: dict) -> None:
 
 
 def imprimir_leitura(leitura: dict) -> None:
+    local = leitura.get("localizacao", {})
     print(
         f"[{leitura['timestamp']}] "
         f"{leitura['sensor_id']} | "
+        f"{local.get('municipio', '--')}/{local.get('uf', '--')} | "
         f"Chuva: {leitura['chuva_mm']:>5.2f} mm | "
         f"Nivel: {leitura['nivel_m']:>5.3f} m | "
         f"Tendencia: {leitura['tendencia']:<20} | "
@@ -113,10 +118,11 @@ def executar_simulacao(intervalo: float, ciclos: int | None) -> None:
         for sensor in SENSORES
     }
 
-    print("=" * 100)
-    print("HYDROALERT AI - ETAPA 1: SIMULADOR DE SENSORES HIDROMETEOROLOGICOS")
-    print("Regiao piloto: Goiania/GO | Dados 100% simulados para fins academicos")
-    print("=" * 100)
+    print("=" * 112)
+    print("HYDROALERT AI - REDE SIMULADA DE SENSORES HIDROMETEOROLOGICOS")
+    print("Cobertura piloto: Estado de Goias | Dados 100% simulados para fins academicos")
+    print(f"Pontos simulados ativos: {len(SENSORES)}")
+    print("=" * 112)
 
     ciclo_atual = 0
 
@@ -141,7 +147,7 @@ def executar_simulacao(intervalo: float, ciclos: int | None) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Simulador IoT da Etapa 1 do HydroAlert AI"
+        description="Simulador IoT territorial do HydroAlert AI"
     )
     parser.add_argument(
         "--intervalo",
