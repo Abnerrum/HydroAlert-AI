@@ -1,0 +1,70 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: hydroalert-mosquitto
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    container_name: hydroalert-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_dados:/data/db
+    restart: unless-stopped
+
+  subscriber:
+    build: .
+    container_name: hydroalert-subscriber
+    command: python -m iot.mqtt_subscriber
+    environment:
+      MQTT_BROKER: mosquitto
+      MONGO_URI: mongodb://mongo:27017/
+    volumes:
+      - hydro_dados:/app/data
+    depends_on:
+      - mosquitto
+      - mongo
+    restart: unless-stopped
+
+  api:
+    build: .
+    container_name: hydroalert-api
+    environment:
+      MQTT_BROKER: mosquitto
+      MONGO_URI: mongodb://mongo:27017/
+      # API_TOKEN: troque-por-um-token-forte
+      # CORS_ORIGINS: "*"
+    ports:
+      - "8000:8000"
+    volumes:
+      - hydro_dados:/app/data
+      - hydro_models:/app/models
+    depends_on:
+      - mongo
+      - subscriber
+    restart: unless-stopped
+
+  publisher:
+    build: .
+    container_name: hydroalert-publisher
+    command: python -m iot.mqtt_publisher --intervalo 5
+    environment:
+      MQTT_BROKER: mosquitto
+    volumes:
+      - hydro_dados:/app/data
+    depends_on:
+      - mosquitto
+      - subscriber
+    profiles:
+      - simulacao
+    restart: unless-stopped
+
+volumes:
+  mongo_dados:
+  hydro_dados:
+  hydro_models:

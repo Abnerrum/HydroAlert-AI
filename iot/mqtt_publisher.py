@@ -5,6 +5,8 @@ import time
 
 import paho.mqtt.client as mqtt
 
+from logging_config import configurar_logging
+
 from .config import (
     INTERVALO_PADRAO_SEGUNDOS,
     MQTT_BROKER,
@@ -13,16 +15,21 @@ from .config import (
     MQTT_QOS,
     MQTT_TOPIC_PREFIX,
     SENSORES,
+    aplicar_credenciais_mqtt,
 )
 from .sensor_simulator import gerar_leitura, salvar_leitura
 
+logger = configurar_logging("hydroalert.mqtt_publisher")
+
 
 def criar_cliente() -> mqtt.Client:
-    return mqtt.Client(
+    client = mqtt.Client(
         callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
         client_id="hydroalert-simulador-publisher",
         protocol=mqtt.MQTTv311,
     )
+    aplicar_credenciais_mqtt(client)
+    return client
 
 
 def publicar_leitura(client: mqtt.Client, leitura: dict) -> None:
@@ -35,11 +42,12 @@ def publicar_leitura(client: mqtt.Client, leitura: dict) -> None:
     if resultado.rc != mqtt.MQTT_ERR_SUCCESS:
         raise RuntimeError(f"Falha ao publicar no MQTT. Codigo: {resultado.rc}")
 
-    print(
-        f"PUBLICADO | {topico} | "
-        f"Chuva: {leitura['chuva_mm']:>5.2f} mm | "
-        f"Nivel: {leitura['nivel_m']:>5.3f} m | "
-        f"Risco: {leitura['risco']}"
+    logger.info(
+        "PUBLICADO | %s | Chuva: %5.2f mm | Nivel: %5.3f m | Risco: %s",
+        topico,
+        leitura["chuva_mm"],
+        leitura["nivel_m"],
+        leitura["risco"],
     )
 
 
@@ -47,10 +55,10 @@ def executar(intervalo: float, ciclos: int | None, broker: str, porta: int) -> N
     client = criar_cliente()
 
     try:
-        print(f"Conectando ao broker MQTT em {broker}:{porta}...")
+        logger.info("Conectando ao broker MQTT em %s:%s...", broker, porta)
         client.connect(broker, porta, MQTT_KEEPALIVE)
         client.loop_start()
-        print("Conectado ao Mosquitto. Iniciando publicacao da telemetria.\n")
+        logger.info("Conectado ao Mosquitto. Iniciando publicacao da telemetria.")
 
         niveis = {
             sensor["sensor_id"]: round(random.uniform(0.70, 1.30), 3)
@@ -61,7 +69,7 @@ def executar(intervalo: float, ciclos: int | None, broker: str, porta: int) -> N
 
         while ciclos is None or ciclo_atual < ciclos:
             ciclo_atual += 1
-            print(f"Ciclo MQTT {ciclo_atual}")
+            logger.info("Ciclo MQTT %d", ciclo_atual)
 
             for sensor in SENSORES:
                 leitura = gerar_leitura(sensor, niveis)
@@ -72,16 +80,18 @@ def executar(intervalo: float, ciclos: int | None, broker: str, porta: int) -> N
                 time.sleep(intervalo)
 
     except (ConnectionRefusedError, OSError) as erro:
-        print("\nERRO: nao foi possivel conectar ao broker MQTT.")
-        print(f"Detalhe: {erro}")
-        print("Confirme se o Eclipse Mosquitto esta instalado e em execucao na porta 1883.")
+        logger.error("Nao foi possivel conectar ao broker MQTT. Detalhe: %s", erro)
+        logger.error(
+            "Confirme se o Eclipse Mosquitto esta instalado e em execucao na porta %s.",
+            porta,
+        )
     except KeyboardInterrupt:
-        print("\nPublicacao encerrada pelo usuario.")
+        logger.info("Publicacao encerrada pelo usuario.")
     finally:
         try:
             client.loop_stop()
             client.disconnect()
-        except Exception:
+        except Exception:  # noqa: BLE001 - desconexao e melhor esforco
             pass
 
 

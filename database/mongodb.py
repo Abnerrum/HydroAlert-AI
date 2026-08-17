@@ -10,6 +10,7 @@ MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
 MONGO_DATABASE = os.getenv("MONGO_DATABASE", "hydroalert_ai")
 MONGO_COLLECTION = os.getenv("MONGO_COLLECTION", "telemetria")
 MONGO_TIMEOUT_MS = int(os.getenv("MONGO_TIMEOUT_MS", "2000"))
+MONGO_TTL_DIAS = int(os.getenv("MONGO_TTL_DIAS", "0") or "0")
 
 _client: MongoClient | None = None
 
@@ -30,7 +31,16 @@ def obter_colecao() -> Collection:
 
 
 def preparar_banco() -> None:
-    """Valida a conexao e cria indices usados pelo projeto."""
+    """Valida a conexao e garante os indices usados pelo projeto.
+
+    Indices:
+    - sensor_timestamp: consultas da API e do ML por sensor ordenadas por data;
+    - risco: filtros de alertas por severidade;
+    - timestamp_desc: consultas globais ordenadas pela leitura mais recente;
+    - municipio_timestamp: painel territorial filtrado por municipio;
+    - ttl_recebido_em (opcional): expira documentos apos MONGO_TTL_DIAS dias,
+      quando a variavel de ambiente e definida com valor maior que zero.
+    """
     cliente = obter_cliente()
     cliente.admin.command("ping")
     colecao = obter_colecao()
@@ -39,6 +49,17 @@ def preparar_banco() -> None:
         name="sensor_timestamp",
     )
     colecao.create_index([("risco", ASCENDING)], name="risco")
+    colecao.create_index([("timestamp", DESCENDING)], name="timestamp_desc")
+    colecao.create_index(
+        [("localizacao.municipio", ASCENDING), ("timestamp", DESCENDING)],
+        name="municipio_timestamp",
+    )
+    if MONGO_TTL_DIAS > 0:
+        colecao.create_index(
+            [("recebido_em", ASCENDING)],
+            name="ttl_recebido_em",
+            expireAfterSeconds=MONGO_TTL_DIAS * 86400,
+        )
 
 
 def status_mongodb() -> dict:
