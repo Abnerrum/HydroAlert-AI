@@ -1,20 +1,40 @@
+import os
 from pathlib import Path
 
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:  # pragma: no cover - dotenv e opcional em producao
+    pass
+
 # Intervalo padrao entre ciclos dos sensores simulados.
-INTERVALO_PADRAO_SEGUNDOS = 5
+INTERVALO_PADRAO_SEGUNDOS = float(os.getenv("INTERVALO_PADRAO_SEGUNDOS", "5"))
 
 # Arquivos locais de apoio e auditoria.
-PASTA_DADOS = Path(__file__).resolve().parents[1] / "data"
+PASTA_DADOS = Path(
+    os.getenv("DATA_DIR", str(Path(__file__).resolve().parents[1] / "data"))
+)
 ARQUIVO_TELEMETRIA = PASTA_DADOS / "telemetria.jsonl"
 ARQUIVO_MQTT_RECEBIDO = PASTA_DADOS / "mqtt_recebido.jsonl"
 
-# Etapa 2 - configuracao MQTT local.
-MQTT_BROKER = "localhost"
-MQTT_PORT = 1883
-MQTT_KEEPALIVE = 60
-MQTT_QOS = 1
-MQTT_TOPIC_PREFIX = "hydroalert/telemetria"
+# Etapa 2 - configuracao MQTT. Todos os parametros podem ser sobrescritos
+# por variaveis de ambiente (ver .env.example).
+MQTT_BROKER = os.getenv("MQTT_BROKER", "localhost")
+MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
+MQTT_KEEPALIVE = int(os.getenv("MQTT_KEEPALIVE", "60"))
+MQTT_QOS = int(os.getenv("MQTT_QOS", "1"))
+MQTT_USERNAME = os.getenv("MQTT_USERNAME") or None
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD") or None
+MQTT_TOPIC_PREFIX = os.getenv("MQTT_TOPIC_PREFIX", "hydroalert/telemetria")
 MQTT_TOPIC_WILDCARD = f"{MQTT_TOPIC_PREFIX}/+"
+
+
+def aplicar_credenciais_mqtt(client) -> None:
+    """Aplica autenticacao no cliente MQTT quando configurada via ambiente."""
+    if MQTT_USERNAME:
+        client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+
 
 # Rede de monitoramento 100% SIMULADA para demonstracao academica em Goias.
 # Coordenadas representam pontos aproximados para visualizacao do prototipo e
