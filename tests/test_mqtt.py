@@ -113,6 +113,17 @@ class TestMQTT(unittest.TestCase):
             on_message(None, None, mensagem)
         salvar.assert_not_called()
 
+    def test_on_message_descarta_telemetria_fora_do_schema(self):
+        mensagem = SimpleNamespace(
+            topic=f"{MQTT_TOPIC_PREFIX}/GYN-SIM-001",
+            payload=json.dumps({"sensor_id": "GYN-SIM-001", "chuva_mm": -5}).encode(
+                "utf-8"
+            ),
+        )
+        with patch("iot.mqtt_subscriber.salvar_recebido") as salvar:
+            on_message(None, None, mensagem)
+        salvar.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
