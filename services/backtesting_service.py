@@ -12,13 +12,19 @@ EXPORT_DIR = Path(__file__).resolve().parents[1] / "exports"
 
 
 def _metricas_evento(reais, previstos, cotas) -> dict:
-    observado = [float(r) >= float(c) for r, c in zip(reais, cotas)]
-    previsto = [float(p) >= float(c) for p, c in zip(previstos, cotas)]
+    observado = [
+        float(r) >= float(c)
+        for r, c in zip(reais, cotas, strict=True)
+    ]
+    previsto = [
+        float(p) >= float(c)
+        for p, c in zip(previstos, cotas, strict=True)
+    ]
 
-    tp = sum(1 for o, p in zip(observado, previsto) if o and p)
-    fp = sum(1 for o, p in zip(observado, previsto) if not o and p)
-    fn = sum(1 for o, p in zip(observado, previsto) if o and not p)
-    tn = sum(1 for o, p in zip(observado, previsto) if not o and not p)
+    tp = sum(1 for o, p in zip(observado, previsto, strict=True) if o and p)
+    fp = sum(1 for o, p in zip(observado, previsto, strict=True) if not o and p)
+    fn = sum(1 for o, p in zip(observado, previsto, strict=True) if o and not p)
+    tn = sum(1 for o, p in zip(observado, previsto, strict=True) if not o and not p)
 
     precision = tp / (tp + fp) if tp + fp else 0.0
     recall = tp / (tp + fn) if tp + fn else 0.0
@@ -89,7 +95,11 @@ def executar_backtesting(registros: list[dict]) -> dict:
             "mae_persistencia_m": round(float(erro_persistencia.mean()), 4),
             "pico_observado_m": round(float(observado.max()), 3),
             "lead_time_avaliado_h": horizonte,
-            "baseline_evento": _metricas_evento(observado, persistencia, df["cota_alerta_m"]),
+            "baseline_evento": _metricas_evento(
+                observado,
+                persistencia,
+                df["cota_alerta_m"],
+            ),
         }
 
         modelo = modelos.get(horizonte) or modelos.get(str(horizonte))
@@ -104,12 +114,19 @@ def executar_backtesting(registros: list[dict]) -> dict:
                         (1 - float(erro_modelo.mean()) / float(erro_persistencia.mean())) * 100,
                         2,
                     ) if float(erro_persistencia.mean()) > 0 else 0.0,
-                    **_metricas_evento(observado, previsoes, df["cota_alerta_m"]),
+                    **_metricas_evento(
+                        observado,
+                        previsoes,
+                        df["cota_alerta_m"],
+                    ),
                 }
             except Exception as erro:
                 item["modelo"] = {"disponivel": False, "erro": str(erro)}
         else:
-            item["modelo"] = {"disponivel": False, "motivo": "Modelo não treinado para este horizonte."}
+            item["modelo"] = {
+                "disponivel": False,
+                "motivo": "Modelo não treinado para este horizonte.",
+            }
 
         resultados.append(item)
 
