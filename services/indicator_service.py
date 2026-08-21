@@ -42,7 +42,7 @@ def estimar_cadencia_minutos(registros: list[dict]) -> float | None:
     intervalos = []
     for timestamps in por_sensor.values():
         ordenados = sorted(set(timestamps))
-        for anterior, atual in zip(ordenados, ordenados[1:]):
+        for anterior, atual in zip(ordenados, ordenados[1:], strict=False):
             minutos = (atual - anterior).total_seconds() / 60
             if minutos > 0:
                 intervalos.append(minutos)
@@ -87,9 +87,11 @@ def enriquecer_indicadores(registros: list[dict]) -> list[dict]:
                     soma[nome] -= valor_antigo
                 fila.append((ts, chuva))
                 soma[nome] += chuva
-                registro[f"chuva_acum_{nome}_mm"] = round(max(0.0, soma[nome]), 2)
+                registro[f"chuva_acum_{nome}_mm"] = round(
+                    max(0.0, soma[nome]),
+                    2,
+                )
 
-            # Intensidade média equivalente à última janela de 15 minutos.
             registro["intensidade_chuva_mm_h"] = round(
                 _float(registro.get("chuva_acum_15m_mm")) * 4.0,
                 2,
