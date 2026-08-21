@@ -5,12 +5,16 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 from database.mongodb import status_mongodb
 from iot.config import SENSORES
 from logging_config import configurar_logging
-from ml.model_service import prever_proximo_nivel, status_modelo
-from services.alerts_service import avaliar_alertas
+from ml.model_service import prever_horizontes, prever_proximo_nivel, status_modelo
+from services.alert_service import listar_revisoes, registrar_revisao
+from services.backtesting_service import executar_backtesting, exportar_power_bi
+from services.data_quality_service import avaliar_qualidade
+from services.public_data_service import catalogo_fontes, consultar_open_meteo
 from services.telemetry_service import calcular_resumo, obter_telemetria
 from services.territory_service import catalogo_localidades, montar_painel_territorial
 from services.weather_service import clima_atual
@@ -22,13 +26,10 @@ DASHBOARD_DIR = BASE_DIR / "dashboard"
 
 app = FastAPI(
     title="HydroAlert AI API",
-    description="API academica para telemetria hidrometeorologica, analise territorial e ML.",
-    version="0.8.0",
+    description="API academica para telemetria hidrometeorologica, analise territorial, alertas preditivos e ML.",
+    version="2.0.0",
 )
 
-# CORS: por padrao libera qualquer origem (prototipo academico com dashboard
-# servido pela propria API). Para restringir, defina CORS_ORIGINS no .env,
-# por exemplo: CORS_ORIGINS=https://meu-dominio.com,https://app.meu-dominio.com
 _origens_env = os.getenv("CORS_ORIGINS", "*")
 CORS_ORIGINS = [origem.strip() for origem in _origens_env.split(",") if origem.strip()]
 
@@ -36,18 +37,14 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
     allow_credentials=False,
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
 
 @app.middleware("http")
 async def verificar_token_api(request: Request, call_next):
-    """Protege os endpoints /api/* quando API_TOKEN esta definido no ambiente.
-
-    Sem API_TOKEN configurado a API permanece aberta (uso local/academico).
-    O dashboard estatico e o /health continuam acessiveis em ambos os casos.
-    """
+    """Protege /api/* quando API_TOKEN estiver configurado."""
     token = os.getenv("API_TOKEN")
     if token and request.url.path.startswith("/api"):
         if request.headers.get("X-API-Key") != token:
@@ -59,6 +56,13 @@ async def verificar_token_api(request: Request, call_next):
 
 
 app.mount("/static", StaticFiles(directory=str(DASHBOARD_DIR)), name="static")
+
+
+class RevisaoEntrada(BaseModel):
+    alerta_id: str = Field(min_length=3, max_length=200)
+    decisao: str
+    revisor: str = Field(min_length=2, max_length=100)
+    justificativa: str = Field(min_length=5, max_length=1000)
 
 
 @app.get("/", response_class=FileResponse, include_in_schema=False)
@@ -127,24 +131,81 @@ def resumo(
     return calcular_resumo(registros, fonte)
 
 
+@app.get("/api/qualidade-dados")
+def qualidade_dados(
+    limite: int = Query(default=1000, ge=1, le=5000),
+    sensor_id: str | None = None,
+):
+    registros, fonte = obter_telemetria(limite=limite, sensor_id=sensor_id)
+    return {"fonte": fonte, **avaliar_qualidade(registros)}
+
+
 @app.get("/api/alertas")
 def alertas(
+    estado: str | None = None,
     municipio: str | None = None,
+    regiao: str | None = None,
+    bairro: str | None = None,
+    sensor_id: str | None = None,
     severidade: str | None = Query(
-        default=None, pattern="^(CRITICA|ALTA|MEDIA)$"
+        default=None,
+        pattern="^(CRITICA|ALTA|MEDIA|CRITICO|ALTO|MODERADO)$",
     ),
 ):
-    """Alertas automaticos avaliados por severidade e regiao."""
-    return avaliar_alertas(municipio=municipio, severidade=severidade)
+    painel = montar_painel_territorial(
+        estado=estado,
+        municipio=municipio,
+        regiao=regiao,
+        bairro=bairro,
+        sensor_id=sensor_id,
+        limite=1000,
+    )
+    itens = list(painel.get("alertas", []))
+    if severidade:
+        mapa = {
+            "CRITICA": "CRITICO",
+            "ALTA": "ALTO",
+            "MEDIA": "MODERADO",
+            "CRITICO": "CRITICO",
+            "ALTO": "ALTO",
+            "MODERADO": "MODERADO",
+        }
+        alvo = mapa[severidade]
+        itens = [item for item in itens if item.get("severidade") == alvo]
+    return {
+        "fonte": painel.get("fonte"),
+        "total": len(itens),
+        "metricas": painel.get("metricas_alerta", {}),
+        "alertas": itens,
+    }
 
 
 @app.get("/api/clima/{sensor_id}")
 def clima(sensor_id: str):
-    """Precipitacao real atual (Open-Meteo) para o ponto do sensor."""
+    """Precipitação real atual via Open-Meteo para o ponto do sensor."""
     dados = clima_atual(sensor_id)
     if not dados.get("disponivel") and "desconhecido" in dados.get("erro", ""):
         raise HTTPException(status_code=404, detail=dados["erro"])
     return dados
+
+
+@app.get("/api/fontes-publicas")
+def fontes_publicas():
+    return {
+        "fontes": catalogo_fontes(),
+        "aviso": "Uso acadêmico; valide licença e disponibilidade na fonte.",
+    }
+
+
+@app.get("/api/clima-publico")
+def clima_publico(
+    latitude: float = Query(ge=-90, le=90),
+    longitude: float = Query(ge=-180, le=180),
+):
+    try:
+        return consultar_open_meteo(latitude, longitude)
+    except Exception as erro:
+        raise HTTPException(status_code=502, detail=f"Fonte pública indisponível: {erro}") from erro
 
 
 @app.get("/api/ml/status")
@@ -154,7 +215,7 @@ def ml_status():
 
 @app.get("/api/ml/prever/{sensor_id}")
 def ml_prever(sensor_id: str):
-    registros, fonte = obter_telemetria(limite=1, sensor_id=sensor_id)
+    registros, fonte = obter_telemetria(limite=500, sensor_id=sensor_id)
     if not registros:
         raise HTTPException(status_code=404, detail="Sensor sem telemetria disponivel.")
 
@@ -165,3 +226,49 @@ def ml_prever(sensor_id: str):
 
     previsao["fonte_telemetria"] = fonte
     return previsao
+
+
+@app.get("/api/ml/prever-horizontes/{sensor_id}")
+def ml_prever_horizontes(sensor_id: str):
+    registros, fonte = obter_telemetria(limite=500, sensor_id=sensor_id)
+    if not registros:
+        raise HTTPException(status_code=404, detail="Sensor sem telemetria disponível.")
+    try:
+        resultado = prever_horizontes(registros[0])
+    except FileNotFoundError as erro:
+        raise HTTPException(status_code=503, detail=str(erro)) from erro
+    resultado["fonte_telemetria"] = fonte
+    return resultado
+
+
+@app.get("/api/revisoes")
+def revisoes():
+    return {"revisoes": listar_revisoes()}
+
+
+@app.post("/api/revisoes", status_code=201)
+def revisar_alerta(entrada: RevisaoEntrada):
+    try:
+        return registrar_revisao(
+            entrada.alerta_id,
+            entrada.decisao.upper(),
+            entrada.revisor,
+            entrada.justificativa,
+        )
+    except ValueError as erro:
+        raise HTTPException(status_code=422, detail=str(erro)) from erro
+
+
+@app.get("/api/backtesting")
+def backtesting():
+    registros, fonte = obter_telemetria(limite=5000)
+    return {"fonte": fonte, **executar_backtesting(registros)}
+
+
+@app.get("/api/power-bi/exportar", response_class=FileResponse)
+def power_bi_exportar():
+    registros, _ = obter_telemetria(limite=5000)
+    if not registros:
+        raise HTTPException(status_code=404, detail="Não há telemetria para exportar.")
+    caminho = exportar_power_bi(registros)
+    return FileResponse(caminho, media_type="text/csv", filename=caminho.name)
