@@ -1,96 +1,141 @@
-import json
+from __future__ import annotations
+
 from datetime import datetime, timezone
 from pathlib import Path
 
 import joblib
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import (
+    f1_score,
+    mean_absolute_error,
+    mean_squared_error,
+    precision_score,
+    r2_score,
+    recall_score,
+)
 
-from ml.features import FEATURES, TARGET, construir_dataset
+from ml.features import FEATURES, HORIZONTES, TARGET, construir_dataset
+from services.indicator_service import estimar_cadencia_minutos
 from services.telemetry_service import obter_telemetria
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 MODELS_DIR = BASE_DIR / "models"
 MODEL_PATH = MODELS_DIR / "modelo_nivel.joblib"
-HISTORICO_PATH = MODELS_DIR / "treinos.jsonl"
+MODEL_VERSION = "2.0"
 
 
-def avaliar(y_real, y_previsto) -> dict:
-    """Calcula MAE, RMSE e R2 de um conjunto de previsoes."""
-    mae = float(mean_absolute_error(y_real, y_previsto))
-    mse = float(mean_squared_error(y_real, y_previsto))
-    r2 = float(r2_score(y_real, y_previsto)) if len(y_real) > 1 else float("nan")
+def _metricas_classificacao(y_real, y_prev, cotas_alerta) -> dict:
+    real = [
+        float(y) >= float(c)
+        for y, c in zip(y_real, cotas_alerta, strict=True)
+    ]
+    previsto = [
+        float(y) >= float(c)
+        for y, c in zip(y_prev, cotas_alerta, strict=True)
+    ]
+
+    tp = sum(1 for r, p in zip(real, previsto, strict=True) if r and p)
+    fp = sum(1 for r, p in zip(real, previsto, strict=True) if not r and p)
+    fn = sum(1 for r, p in zip(real, previsto, strict=True) if r and not p)
+    tn = sum(1 for r, p in zip(real, previsto, strict=True) if not r and not p)
+    positivos_previstos = tp + fp
+
     return {
-        "mae_m": round(mae, 4),
-        "rmse_m": round(mse**0.5, 4),
-        "r2": round(r2, 4),
+        "precision": round(float(precision_score(real, previsto, zero_division=0)), 4),
+        "recall": round(float(recall_score(real, previsto, zero_division=0)), 4),
+        "f1": round(float(f1_score(real, previsto, zero_division=0)), 4),
+        "taxa_falso_alarme": round(fp / positivos_previstos, 4) if positivos_previstos else 0.0,
+        "verdadeiros_positivos": tp,
+        "falsos_positivos": fp,
+        "falsos_negativos": fn,
+        "verdadeiros_negativos": tn,
     }
 
 
 def treinar_modelo() -> dict:
     registros, fonte = obter_telemetria(limite=5000)
-    dataset = construir_dataset(registros)
+    modelos, metricas, importancias = {}, {}, {}
 
-    if len(dataset) < 12:
-        raise RuntimeError(
-            "Dados insuficientes para treino. Gere pelo menos 12 amostras supervisionadas. "
-            f"Amostras atuais: {len(dataset)}"
+    for horizonte in HORIZONTES:
+        dataset = construir_dataset(registros, horizonte)
+        if len(dataset) < 24:
+            raise RuntimeError(
+                f"Dados insuficientes para {horizonte}h. Gere mais histórico hidrológico. "
+                f"Amostras atuais: {len(dataset)}. Sugestão: "
+                "python -m iot.sensor_simulator --ciclos 120 --intervalo 0 --passo-minutos 15"
+            )
+
+        dataset = dataset.sort_values("timestamp").reset_index(drop=True)
+        corte = max(1, int(len(dataset) * 0.75))
+        treino, teste = dataset.iloc[:corte], dataset.iloc[corte:]
+        if teste.empty:
+            raise RuntimeError(f"Conjunto de teste vazio para horizonte {horizonte}h.")
+
+        modelo = RandomForestRegressor(
+            n_estimators=350,
+            max_depth=14,
+            min_samples_leaf=2,
+            random_state=42 + horizonte,
+            n_jobs=-1,
+        )
+        modelo.fit(treino[FEATURES], treino[TARGET])
+        previsoes = modelo.predict(teste[FEATURES])
+        modelos[horizonte] = modelo
+
+        classificacao = _metricas_classificacao(
+            teste[TARGET],
+            previsoes,
+            teste["cota_alerta_m"],
         )
 
-    X = dataset[FEATURES]
-    y = dataset[TARGET]
+        mae_modelo = float(mean_absolute_error(teste[TARGET], previsoes))
+        previsao_persistencia = teste["nivel_m"].astype(float)
+        mae_persistencia = float(mean_absolute_error(teste[TARGET], previsao_persistencia))
 
-    X_treino, X_teste, y_treino, y_teste = train_test_split(
-        X,
-        y,
-        test_size=0.25,
-        shuffle=False,
-    )
-
-    modelo = RandomForestRegressor(
-        n_estimators=200,
-        random_state=42,
-        n_jobs=-1,
-    )
-    modelo.fit(X_treino, y_treino)
-    previsoes = modelo.predict(X_teste)
-
-    # Baseline ingenuo de persistencia: "proximo nivel = nivel atual".
-    # O modelo so e considerado util se superar esse baseline no MAE.
-    previsoes_baseline = X_teste["nivel_m"].to_numpy()
-
-    metricas_modelo = avaliar(y_teste, previsoes)
-    metricas_baseline = avaliar(y_teste, previsoes_baseline)
-
-    metricas = {
-        "mae_m": metricas_modelo["mae_m"],
-        "modelo": metricas_modelo,
-        "baseline_persistencia": metricas_baseline,
-        "supera_baseline": metricas_modelo["mae_m"] < metricas_baseline["mae_m"],
-        "amostras": int(len(dataset)),
-        "treino": int(len(X_treino)),
-        "teste": int(len(X_teste)),
-        "fonte": fonte,
-        "treinado_em": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-    }
+        metricas[f"{horizonte}h"] = {
+            "mae_m": round(mae_modelo, 4),
+            "rmse_m": round(float(mean_squared_error(teste[TARGET], previsoes) ** 0.5), 4),
+            "r2": round(float(r2_score(teste[TARGET], previsoes)), 4) if len(teste) > 1 else None,
+            "mae_persistencia_m": round(mae_persistencia, 4),
+            "supera_baseline": mae_modelo < mae_persistencia,
+            "amostras": len(dataset),
+            "treino": len(treino),
+            "teste": len(teste),
+            "test_start_timestamp": teste.iloc[0]["timestamp"].isoformat() if not teste.empty else None,
+            "lead_time_h": horizonte,
+            **classificacao,
+        }
+        importancias[f"{horizonte}h"] = sorted(
+            (
+                {"feature": nome, "importancia": round(float(valor), 5)}
+                for nome, valor in zip(
+                    FEATURES,
+                    modelo.feature_importances_,
+                    strict=True,
+                )
+            ),
+            key=lambda item: item["importancia"],
+            reverse=True,
+        )
 
     artefato = {
-        "model": modelo,
+        "version": MODEL_VERSION,
+        "trained_at": datetime.now(timezone.utc).isoformat(),
+        "models": modelos,
         "features": FEATURES,
-        "metrics": metricas,
+        "metrics": {
+            "horizontes": metricas,
+            "fonte": fonte,
+            "validacao": "holdout_temporal_25pct",
+            "cadencia_estimada_min": estimar_cadencia_minutos(registros),
+            "criterio_evento": "nivel_futuro >= cota_alerta",
+            "feature_importance": importancias,
+        },
     }
 
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     joblib.dump(artefato, MODEL_PATH)
-    registrar_historico(metricas)
-    return metricas
-
-
-def registrar_historico(metricas: dict) -> None:
-    """Anexa as metricas de cada treino em models/treinos.jsonl."""
-    with HISTORICO_PATH.open("a", encoding="utf-8") as arquivo:
-        arquivo.write(json.dumps(metricas, ensure_ascii=False) + "\n")
+    return artefato["metrics"]
 
 
 def main() -> None:
@@ -100,22 +145,11 @@ def main() -> None:
         print(f"ERRO DE TREINO: {erro}")
         raise SystemExit(1) from erro
 
-    modelo = metricas["modelo"]
-    baseline = metricas["baseline_persistencia"]
-
-    print("Modelo treinado com sucesso.")
+    print("Modelo HydroAlert AI v2 treinado com sucesso.")
     print(f"Arquivo: {MODEL_PATH}")
-    print(f"Amostras: {metricas['amostras']}")
+    print(f"Horizontes validados: {', '.join(metricas['horizontes'])}")
     print(f"Fonte: {metricas['fonte']}")
-    print(
-        f"Modelo   -> MAE: {modelo['mae_m']} m | "
-        f"RMSE: {modelo['rmse_m']} m | R2: {modelo['r2']}"
-    )
-    print(
-        f"Baseline -> MAE: {baseline['mae_m']} m | "
-        f"RMSE: {baseline['rmse_m']} m | R2: {baseline['r2']}"
-    )
-    print(f"Supera baseline de persistencia: {metricas['supera_baseline']}")
+    print(f"Cadencia estimada: {metricas.get('cadencia_estimada_min')} min")
 
 
 if __name__ == "__main__":
