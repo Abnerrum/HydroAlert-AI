@@ -1,10 +1,15 @@
 import json
 from collections import Counter
+from time import monotonic
 
 from pymongo.errors import PyMongoError
 
 from database.mongodb import listar_telemetria
 from iot.config import ARQUIVO_MQTT_RECEBIDO, ARQUIVO_TELEMETRIA
+from services.indicator_service import enriquecer_indicadores, indicadores_ultima_leitura
+
+_MONGO_COOLDOWN_SEGUNDOS = 30.0
+_mongo_indisponivel_ate = 0.0
 
 
 def _carregar_jsonl(caminho, limite: int, sensor_id: str | None) -> list[dict]:
@@ -34,18 +39,22 @@ def obter_telemetria(
 ) -> tuple[list[dict], str]:
     limite = max(1, min(int(limite), 5000))
 
-    try:
-        registros = listar_telemetria(limite=limite, sensor_id=sensor_id)
-        if registros:
-            return registros, "mongodb"
-    except PyMongoError:
-        pass
+    global _mongo_indisponivel_ate
+    if monotonic() >= _mongo_indisponivel_ate:
+        try:
+            registros = listar_telemetria(limite=limite, sensor_id=sensor_id)
+            _mongo_indisponivel_ate = 0.0
+            if registros:
+                return enriquecer_indicadores(registros), "mongodb"
+        except PyMongoError:
+            _mongo_indisponivel_ate = monotonic() + _MONGO_COOLDOWN_SEGUNDOS
 
     registros = _carregar_jsonl(ARQUIVO_MQTT_RECEBIDO, limite, sensor_id)
     if registros:
-        return registros, "mqtt_jsonl"
+        return enriquecer_indicadores(registros), "mqtt_jsonl"
 
-    return _carregar_jsonl(ARQUIVO_TELEMETRIA, limite, sensor_id), "telemetria_jsonl"
+    registros = _carregar_jsonl(ARQUIVO_TELEMETRIA, limite, sensor_id)
+    return enriquecer_indicadores(registros), "telemetria_jsonl"
 
 
 def calcular_resumo(registros: list[dict], fonte: str) -> dict:
@@ -59,6 +68,7 @@ def calcular_resumo(registros: list[dict], fonte: str) -> dict:
             "risco_atual": "SEM_DADOS",
             "riscos": {},
             "ultima_leitura": None,
+            "indicadores_hidrometeorologicos": indicadores_ultima_leitura(None),
         }
 
     chuvas = [float(r.get("chuva_mm", 0) or 0) for r in registros]
@@ -75,4 +85,5 @@ def calcular_resumo(registros: list[dict], fonte: str) -> dict:
         "risco_atual": ultima.get("risco", "DESCONHECIDO"),
         "riscos": dict(riscos),
         "ultima_leitura": ultima,
+        "indicadores_hidrometeorologicos": indicadores_ultima_leitura(ultima),
     }
