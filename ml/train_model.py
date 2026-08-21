@@ -25,13 +25,19 @@ MODEL_VERSION = "2.0"
 
 
 def _metricas_classificacao(y_real, y_prev, cotas_alerta) -> dict:
-    real = [float(y) >= float(c) for y, c in zip(y_real, cotas_alerta)]
-    previsto = [float(y) >= float(c) for y, c in zip(y_prev, cotas_alerta)]
+    real = [
+        float(y) >= float(c)
+        for y, c in zip(y_real, cotas_alerta, strict=True)
+    ]
+    previsto = [
+        float(y) >= float(c)
+        for y, c in zip(y_prev, cotas_alerta, strict=True)
+    ]
 
-    tp = sum(1 for r, p in zip(real, previsto) if r and p)
-    fp = sum(1 for r, p in zip(real, previsto) if not r and p)
-    fn = sum(1 for r, p in zip(real, previsto) if r and not p)
-    tn = sum(1 for r, p in zip(real, previsto) if not r and not p)
+    tp = sum(1 for r, p in zip(real, previsto, strict=True) if r and p)
+    fp = sum(1 for r, p in zip(real, previsto, strict=True) if not r and p)
+    fn = sum(1 for r, p in zip(real, previsto, strict=True) if r and not p)
+    tn = sum(1 for r, p in zip(real, previsto, strict=True) if not r and not p)
     positivos_previstos = tp + fp
 
     return {
@@ -102,7 +108,11 @@ def treinar_modelo() -> dict:
         importancias[f"{horizonte}h"] = sorted(
             (
                 {"feature": nome, "importancia": round(float(valor), 5)}
-                for nome, valor in zip(FEATURES, modelo.feature_importances_)
+                for nome, valor in zip(
+                    FEATURES,
+                    modelo.feature_importances_,
+                    strict=True,
+                )
             ),
             key=lambda item: item["importancia"],
             reverse=True,
@@ -133,7 +143,7 @@ def main() -> None:
         metricas = treinar_modelo()
     except (RuntimeError, ValueError) as erro:
         print(f"ERRO DE TREINO: {erro}")
-        raise SystemExit(1)
+        raise SystemExit(1) from erro
 
     print("Modelo HydroAlert AI v2 treinado com sucesso.")
     print(f"Arquivo: {MODEL_PATH}")
