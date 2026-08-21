@@ -21,7 +21,7 @@ A versão foi revisada para ficar mais coerente com o Relatório Inicial do Proj
 - backtesting temporal com MAE, precision, recall, F1 e taxa de falsos alarmes;
 - área exposta estimada nas manchas simuladas;
 - exportação ampliada para Power BI;
-- dashboard com indicadores de governança e validação;
+- API com indicadores de governança e validação, pronta para evolução do dashboard;
 - catálogo de Open-Meteo, CEMADEN, ANA/Hidroweb, INMET e CIMEHGO.
 
 ## Arquitetura
@@ -177,7 +177,7 @@ cotas operacionais
 
 A validação é cronológica: 75% iniciais para treino e 25% finais para teste.
 
-As métricas do artefato incluído no projeto foram obtidas **somente em telemetria simulada**, portanto não podem ser interpretadas como desempenho real em enchentes.
+As métricas documentadas nesta versão foram obtidas **somente em telemetria simulada**, portanto não podem ser interpretadas como desempenho real em enchentes.
 
 A validação atual também mostra que o Random Forest ainda **não supera o baseline de persistência em MAE** e possui falsos alarmes relevantes nos horizontes longos. Isso foi mantido de forma explícita como limitação científica e está detalhado em `docs/VALIDACAO_V2.md`.
 
@@ -193,7 +193,8 @@ CRÍTICO   → EMERGÊNCIA
 ```
 
 Um alerta pode ser `ATUAL` ou `PREDITIVO`. Emergências exigem revisão humana antes de serem consideradas validadas no fluxo acadêmico.
-O dashboard possui um formulário de governança para registrar **aprovação ou rejeição**, nome do revisor e justificativa, mantendo o histórico em `data/revisoes.json`.
+
+A API já permite registrar **aprovação ou rejeição**, nome do revisor e justificativa por meio de `POST /api/revisoes`, mantendo o histórico em `data/revisoes.json`. A interface visual de revisão pode ser ampliada em uma próxima evolução do dashboard.
 
 ## Power BI
 
@@ -205,7 +206,7 @@ GET /api/power-bi/exportar
 
 O CSV contém chuva atual/acumulada, nível, tendência, distância até cotas, percentual da cota crítica, risco e localização.
 
-## Testes
+## Testes e CI
 
 ```powershell
 python -m unittest discover -s tests -v
@@ -223,6 +224,8 @@ A versão entregue possui testes para:
 - GeoJSON;
 - backtesting;
 - exportação Power BI.
+
+O repositório também contém GitHub Actions para executar `ruff` e a suíte de testes em Python 3.11 e 3.12.
 
 ## Documentação importante
 
@@ -248,7 +251,8 @@ Ainda faltam, para uma evolução de pesquisa aplicada:
 5. autenticação e controle de acesso de revisores;
 6. backtesting com eventos históricos reais;
 7. homologação com especialistas/Defesa Civil;
-8. ensaios de disponibilidade, segurança e escalabilidade.
+8. ensaios de disponibilidade, segurança e escalabilidade;
+9. integração visual completa dos novos indicadores de governança no dashboard.
 
 A arquitetura usa componentes associados a cenários de Big Data, mas a base atual é de protótipo acadêmico e não representa volume real de produção.
 
