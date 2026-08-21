@@ -2,6 +2,7 @@ import argparse
 import json
 import random
 import time
+from datetime import datetime, timedelta
 
 import paho.mqtt.client as mqtt
 
@@ -17,7 +18,7 @@ from .config import (
     SENSORES,
     aplicar_credenciais_mqtt,
 )
-from .sensor_simulator import gerar_leitura, salvar_leitura
+from .sensor_simulator import FUSO_BRASILIA, gerar_leitura, salvar_leitura
 
 logger = configurar_logging("hydroalert.mqtt_publisher")
 
@@ -51,7 +52,18 @@ def publicar_leitura(client: mqtt.Client, leitura: dict) -> None:
     )
 
 
-def executar(intervalo: float, ciclos: int | None, broker: str, porta: int) -> None:
+def executar(
+    intervalo: float,
+    ciclos: int | None,
+    broker: str,
+    porta: int,
+    passo_minutos: int = 15,
+    tempo_real: bool = False,
+    seed: int | None = None,
+) -> None:
+    if seed is not None:
+        random.seed(seed)
+
     client = criar_cliente()
 
     try:
@@ -64,17 +76,31 @@ def executar(intervalo: float, ciclos: int | None, broker: str, porta: int) -> N
             sensor["sensor_id"]: round(random.uniform(0.70, 1.30), 3)
             for sensor in SENSORES
         }
-
+        instante_simulado = datetime.now(FUSO_BRASILIA).replace(second=0, microsecond=0)
         ciclo_atual = 0
 
         while ciclos is None or ciclo_atual < ciclos:
             ciclo_atual += 1
-            logger.info("Ciclo MQTT %d", ciclo_atual)
+            instante = datetime.now(FUSO_BRASILIA) if tempo_real else instante_simulado
+            logger.info(
+                "Ciclo MQTT %d | instante hidrologico %s",
+                ciclo_atual,
+                instante.isoformat(timespec="minutes"),
+            )
 
             for sensor in SENSORES:
-                leitura = gerar_leitura(sensor, niveis)
+                leitura = gerar_leitura(
+                    sensor,
+                    niveis,
+                    timestamp=instante,
+                    ciclo=ciclo_atual,
+                    passo_hidrologico_min=passo_minutos,
+                )
                 salvar_leitura(leitura)
                 publicar_leitura(client, leitura)
+
+            if not tempo_real:
+                instante_simulado += timedelta(minutes=passo_minutos)
 
             if ciclos is None or ciclo_atual < ciclos:
                 time.sleep(intervalo)
@@ -112,14 +138,36 @@ def main() -> None:
         default=None,
         help="Quantidade de ciclos. Se omitido, executa ate Ctrl+C.",
     )
+    parser.add_argument(
+        "--passo-minutos",
+        type=int,
+        default=15,
+        help="Minutos hidrologicos avancados por ciclo no modo acelerado.",
+    )
+    parser.add_argument(
+        "--tempo-real",
+        action="store_true",
+        help="Usa o relogio real em vez do relogio hidrologico acelerado.",
+    )
+    parser.add_argument("--seed", type=int, default=None)
     args = parser.parse_args()
 
     if args.intervalo < 0:
         parser.error("--intervalo nao pode ser negativo")
     if args.ciclos is not None and args.ciclos <= 0:
         parser.error("--ciclos deve ser maior que zero")
+    if args.passo_minutos <= 0:
+        parser.error("--passo-minutos deve ser maior que zero")
 
-    executar(args.intervalo, args.ciclos, args.broker, args.porta)
+    executar(
+        args.intervalo,
+        args.ciclos,
+        args.broker,
+        args.porta,
+        passo_minutos=args.passo_minutos,
+        tempo_real=args.tempo_real,
+        seed=args.seed,
+    )
 
 
 if __name__ == "__main__":
