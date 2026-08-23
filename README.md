@@ -57,6 +57,7 @@ Sensores simulados / fontes públicas
 - Chart.js
 - Leaflet + OpenStreetMap
 - Power BI via exportação CSV
+- Docker Desktop / Docker Compose
 - Git / GitHub
 
 ## Estrutura principal
@@ -70,8 +71,11 @@ ml/                  features, treino e inferência
 services/            alertas, indicadores, qualidade, território e backtesting
 data/                 telemetria acadêmica
 models/               artefato do modelo
+docker/               configuração do broker Mosquitto
 docs/                 documentação técnica
 tests/                testes automatizados
+Dockerfile            imagem Python/FastAPI
+docker-compose.yml    orquestra API, MongoDB, MQTT e ML
 ```
 
 ## Instalação no Windows / VS Code
@@ -87,6 +91,103 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
+
+## Execução recomendada com Docker Desktop
+
+Com o Docker Desktop aberto e o Engine em execução, o projeto pode subir sem instalar MongoDB ou Mosquitto manualmente no Windows.
+
+### Primeira preparação da demonstração
+
+Depois de clonar ou atualizar o repositório, execute no PowerShell:
+
+```powershell
+git pull
+.\PREPARAR_DOCKER_DEMO.bat
+```
+
+Esse processo:
+
+1. constrói a imagem Python do HydroAlert;
+2. inicia Eclipse Mosquitto;
+3. inicia MongoDB 7;
+4. inicia o subscriber MQTT;
+5. inicia a API FastAPI;
+6. gera 120 ciclos de telemetria simulada;
+7. persiste os dados no MongoDB e no volume compartilhado;
+8. treina o modelo Random Forest de 1h, 3h e 6h.
+
+Ao final, abra:
+
+```text
+Dashboard: http://localhost:8000
+Swagger:   http://localhost:8000/docs
+Health:    http://localhost:8000/health
+ML Status: http://localhost:8000/api/ml/status
+```
+
+### Iniciar novamente depois da primeira preparação
+
+```powershell
+.\INICIAR_DOCKER.bat
+```
+
+Ou diretamente pelo Docker Compose:
+
+```powershell
+docker compose up -d --build mosquitto mongo subscriber api
+```
+
+### Simulação MQTT contínua
+
+```powershell
+docker compose --profile simulacao up -d publisher
+```
+
+Para acompanhar a telemetria:
+
+```powershell
+docker compose logs -f publisher subscriber
+```
+
+### Treinar novamente o modelo
+
+```powershell
+docker compose run --rm trainer
+```
+
+### Verificar os containers
+
+```powershell
+docker compose ps
+```
+
+Os serviços possuem healthchecks para MongoDB, Mosquitto e FastAPI. No estado normal, os serviços principais devem aparecer como `Up`/`healthy`.
+
+### Parar o ambiente
+
+```powershell
+.\PARAR_DOCKER.bat
+```
+
+Ou:
+
+```powershell
+docker compose down
+```
+
+Esse comando preserva os volumes. Para apagar também MongoDB, telemetria e modelo armazenados nos volumes Docker:
+
+```powershell
+docker compose down -v
+```
+
+### Portas utilizadas
+
+| Serviço | Porta | Uso |
+|---|---:|---|
+| FastAPI / Dashboard | 8000 | sistema web e API |
+| MongoDB | 27017 | banco NoSQL |
+| Eclipse Mosquitto | 1883 | broker MQTT |
 
 ## Execução rápida sem MQTT
 
@@ -110,7 +211,7 @@ Health:    http://127.0.0.1:8000/health
 
 Cada ciclo representa 15 minutos hidrológicos. Assim, 120 ciclos geram aproximadamente 30 horas de histórico simulado sem precisar esperar 30 horas reais.
 
-## Execução completa com MQTT + MongoDB
+## Execução completa com MQTT + MongoDB sem Docker
 
 ### Terminal 1 — Subscriber
 
