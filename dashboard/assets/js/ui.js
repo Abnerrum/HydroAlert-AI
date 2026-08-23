@@ -117,9 +117,57 @@
         });
     }
 
+    function criarCompartilhamentoOnline() {
+        if (document.getElementById('share-online-btn')) return;
+        const actions = document.querySelector('.topbar-actions');
+        if (!actions) return;
+
+        if (!document.querySelector('link[data-hydro-share]')) {
+            const css = document.createElement('link');
+            css.rel = 'stylesheet';
+            css.href = '/static/share.css';
+            css.dataset.hydroShare = '1';
+            document.head.appendChild(css);
+        }
+
+        const button = document.createElement('button');
+        button.id = 'share-online-btn';
+        button.type = 'button';
+        button.className = 'share-online-btn';
+        button.innerHTML = '↗ Compartilhar online';
+        actions.prepend(button);
+
+        const panel = document.createElement('div');
+        panel.id = 'share-online-panel';
+        panel.className = 'share-online-panel';
+        panel.hidden = true;
+        panel.innerHTML = `
+            <div class="share-online-head">
+                <div>
+                    <strong>Compartilhar HydroAlert</strong>
+                    <span id="share-online-text">O compartilhamento online está desligado.</span>
+                </div>
+                <button id="share-close-btn" class="share-close-btn" type="button" aria-label="Fechar">×</button>
+            </div>
+            <a id="share-online-link" class="share-online-link" href="#" target="_blank" rel="noopener noreferrer" hidden></a>
+            <div class="share-online-actions">
+                <button id="share-copy-btn" type="button" hidden>Copiar link</button>
+                <button id="share-stop-btn" class="danger" type="button" hidden>Encerrar link</button>
+            </div>
+            <small class="share-online-note">O link rápido é temporário e indicado para demonstrações. Ele permanece ativo enquanto o HydroAlert estiver rodando neste computador.</small>
+        `;
+        document.body.appendChild(panel);
+
+        const script = document.createElement('script');
+        script.src = '/static/share.js';
+        script.defer = true;
+        document.body.appendChild(script);
+    }
+
     criarMenuMobile();
     ativarNavegacaoPorSecao();
     melhorarAcessibilidade();
     criarProgressoDeRolagem();
     fecharMenuAoRedimensionar();
+    criarCompartilhamentoOnline();
 })();
