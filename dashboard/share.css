@@ -1,0 +1,122 @@
+.share-online-btn {
+    border: 1px solid rgba(56, 189, 248, .28);
+    background: rgba(14, 165, 233, .09);
+    color: #dff7ff;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.share-online-btn:hover {
+    transform: translateY(-1px);
+    background: rgba(14, 165, 233, .16);
+}
+
+.share-online-btn.online {
+    border-color: rgba(52, 211, 153, .38);
+    background: rgba(52, 211, 153, .11);
+    color: #a7f3d0;
+}
+
+.share-online-btn:disabled {
+    opacity: .65;
+    cursor: wait;
+}
+
+.share-online-panel {
+    position: fixed;
+    top: 82px;
+    right: 24px;
+    z-index: 9999;
+    width: min(430px, calc(100vw - 32px));
+    padding: 18px;
+    border: 1px solid rgba(56, 189, 248, .18);
+    border-radius: 16px;
+    background: rgba(5, 14, 25, .97);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .42);
+    backdrop-filter: blur(18px);
+}
+
+.share-online-panel[hidden] {
+    display: none;
+}
+
+.share-online-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.share-online-head strong {
+    display: block;
+    color: #eef6ff;
+    font-size: 15px;
+}
+
+.share-online-head span {
+    display: block;
+    margin-top: 4px;
+    color: #7f9bb0;
+    font-size: 12px;
+}
+
+.share-close-btn {
+    border: 0;
+    background: transparent;
+    color: #8ca5b8;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.share-online-link {
+    display: block;
+    margin: 12px 0;
+    padding: 11px 12px;
+    border-radius: 10px;
+    background: rgba(56, 189, 248, .08);
+    border: 1px solid rgba(56, 189, 248, .14);
+    color: #67e8f9;
+    font-size: 12px;
+    word-break: break-all;
+}
+
+.share-online-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.share-online-actions button {
+    border: 1px solid rgba(148, 163, 184, .16);
+    background: rgba(148, 163, 184, .07);
+    color: #d9e8f2;
+    border-radius: 9px;
+    padding: 9px 12px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.share-online-actions .danger {
+    color: #fecdd3;
+    border-color: rgba(251, 113, 133, .22);
+    background: rgba(251, 113, 133, .07);
+}
+
+.share-online-note {
+    display: block;
+    margin-top: 12px;
+    color: #71899d;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+    .share-online-panel {
+        top: 70px;
+        right: 16px;
+    }
+}
