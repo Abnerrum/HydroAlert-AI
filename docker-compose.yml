@@ -8,7 +8,7 @@ services:
       - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - mosquitto_dados:/mosquitto/data
     healthcheck:
-      test: ["CMD-SHELL", "mosquitto_sub -h localhost -t '$$SYS/broker/version' -C 1 -W 3 >/dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "mosquitto_pub -h localhost -t hydroalert/health -m ok >/dev/null 2>&1 || exit 1"]
       interval: 5s
       timeout: 4s
       retries: 10
