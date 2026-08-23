@@ -6,15 +6,30 @@ services:
       - "1883:1883"
     volumes:
       - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_dados:/mosquitto/data
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -h localhost -t '$$SYS/broker/version' -C 1 -W 3 >/dev/null 2>&1 || exit 1"]
+      interval: 5s
+      timeout: 4s
+      retries: 10
+      start_period: 5s
     restart: unless-stopped
 
   mongo:
     image: mongo:7
     container_name: hydroalert-mongo
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-hydroalert_ai}
     ports:
       - "27017:27017"
     volumes:
       - mongo_dados:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval \"quit(db.adminCommand('ping').ok ? 0 : 2)\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
     restart: unless-stopped
 
   subscriber:
@@ -23,12 +38,21 @@ services:
     command: python -m iot.mqtt_subscriber
     environment:
       MQTT_BROKER: mosquitto
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_QOS: ${MQTT_QOS:-1}
+      MQTT_TOPIC_PREFIX: ${MQTT_TOPIC_PREFIX:-hydroalert/telemetria}
       MONGO_URI: mongodb://mongo:27017/
+      MONGO_DATABASE: ${MONGO_DATABASE:-hydroalert_ai}
+      MONGO_COLLECTION: ${MONGO_COLLECTION:-telemetria}
+      MONGO_TIMEOUT_MS: ${MONGO_TIMEOUT_MS:-2000}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     volumes:
       - hydro_dados:/app/data
     depends_on:
-      - mosquitto
-      - mongo
+      mosquitto:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
     restart: unless-stopped
 
   api:
@@ -36,17 +60,30 @@ services:
     container_name: hydroalert-api
     environment:
       MQTT_BROKER: mosquitto
+      MQTT_PORT: ${MQTT_PORT:-1883}
       MONGO_URI: mongodb://mongo:27017/
-      # API_TOKEN: troque-por-um-token-forte
-      # CORS_ORIGINS: "*"
+      MONGO_DATABASE: ${MONGO_DATABASE:-hydroalert_ai}
+      MONGO_COLLECTION: ${MONGO_COLLECTION:-telemetria}
+      MONGO_TIMEOUT_MS: ${MONGO_TIMEOUT_MS:-2000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      API_TOKEN: ${API_TOKEN:-}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     ports:
       - "8000:8000"
     volumes:
       - hydro_dados:/app/data
       - hydro_models:/app/models
     depends_on:
-      - mongo
-      - subscriber
+      mongo:
+        condition: service_healthy
+      subscriber:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3).read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
 
   publisher:
@@ -55,16 +92,43 @@ services:
     command: python -m iot.mqtt_publisher --intervalo 5
     environment:
       MQTT_BROKER: mosquitto
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_QOS: ${MQTT_QOS:-1}
+      MQTT_TOPIC_PREFIX: ${MQTT_TOPIC_PREFIX:-hydroalert/telemetria}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     volumes:
       - hydro_dados:/app/data
     depends_on:
-      - mosquitto
-      - subscriber
+      mosquitto:
+        condition: service_healthy
+      subscriber:
+        condition: service_started
     profiles:
       - simulacao
     restart: unless-stopped
+
+  trainer:
+    build: .
+    container_name: hydroalert-trainer
+    command: python -m ml.train_model
+    environment:
+      MONGO_URI: mongodb://mongo:27017/
+      MONGO_DATABASE: ${MONGO_DATABASE:-hydroalert_ai}
+      MONGO_COLLECTION: ${MONGO_COLLECTION:-telemetria}
+      MONGO_TIMEOUT_MS: ${MONGO_TIMEOUT_MS:-2000}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - hydro_dados:/app/data
+      - hydro_models:/app/models
+    depends_on:
+      mongo:
+        condition: service_healthy
+    profiles:
+      - ml
+    restart: "no"
 
 volumes:
   mongo_dados:
   hydro_dados:
   hydro_models:
+  mosquitto_dados:
