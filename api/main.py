@@ -17,6 +17,7 @@ from services.data_quality_service import avaliar_qualidade
 from services.public_data_service import catalogo_fontes, consultar_open_meteo
 from services.telemetry_service import calcular_resumo, obter_telemetria
 from services.territory_service import catalogo_localidades, montar_painel_territorial
+from services.tunnel_service import iniciar_tunnel, parar_tunnel, status_tunnel
 from services.weather_service import clima_atual
 
 logger = configurar_logging("hydroalert.api")
@@ -77,7 +78,26 @@ def health():
         "mongodb": status_mongodb(),
         "machine_learning": status_modelo(),
         "sensores_configurados": len(SENSORES),
+        "compartilhamento": status_tunnel(),
     }
+
+
+@app.get("/api/compartilhamento/status")
+def compartilhamento_status():
+    return status_tunnel()
+
+
+@app.post("/api/compartilhamento/iniciar")
+def compartilhamento_iniciar():
+    try:
+        return iniciar_tunnel()
+    except RuntimeError as erro:
+        raise HTTPException(status_code=503, detail=str(erro)) from erro
+
+
+@app.post("/api/compartilhamento/parar")
+def compartilhamento_parar():
+    return parar_tunnel()
 
 
 @app.get("/api/sensores")
