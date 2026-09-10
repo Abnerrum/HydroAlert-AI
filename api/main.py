@@ -116,7 +116,7 @@ def compartilhamento_status():
 @app.post("/api/compartilhamento/iniciar")
 def compartilhamento_iniciar():
     try:
-        return iniciar_tunnel()
+        return iniciar_tunnel(timeout_s=90.0)
     except RuntimeError as erro:
         raise HTTPException(status_code=503, detail=str(erro)) from erro
 

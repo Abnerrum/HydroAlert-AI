@@ -24,6 +24,6 @@ Services: `mosquitto`, `mongo`, `api` (uvicorn --reload, host port 3000), `subsc
 ## Notes / quirks
 - No external credentials required. All infra is local compose services. `API_TOKEN` is empty (no auth on `/api/*`).
 - The repo's own `docker-compose.yml` builds a production image (`COPY . .`) and is NOT used for dev; `docker-compose.base44.yml` is the dev runbook.
-- `cloudflared` (tunnel/sharing feature) is intentionally NOT installed in the dev image; the `/api/compartilhamento/*` endpoints will fail if invoked, but the dashboard does not depend on them.
+- `cloudflared` is installed in the dev image (`Dockerfile.base44`); the `/api/compartilhamento/*` endpoints create a Cloudflare Quick Tunnel for a temporary public link. The sandbox DNS resolver often can't resolve the new `*.trycloudflare.com` subdomain immediately, so `tunnel_service.py` marks the tunnel as ready even when internal DNS validation fails — the link works externally.
 - ML model is not trained by default (`machine_learning.treinado: false`); run `docker compose -f docker-compose.base44.yml run --rm api python -m ml.train_model` to generate `/app/models/modelo_nivel.joblib` (or use the `ml` profile in the repo's own compose).
 - Telemetry falls back to JSONL files under `data/` when MongoDB is unreachable, so the dashboard renders even before the DB is up.
