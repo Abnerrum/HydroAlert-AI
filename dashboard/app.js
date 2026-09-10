@@ -450,7 +450,7 @@ function atualizarRiscos(resumo) {
     document.getElementById("risk-total").textContent = resumo.total || 0;
     document.getElementById("risk-list").innerHTML = entradas.length ? entradas.map(([r, n]) => `<div class="risk-row"><span>${badgeRisco(r)}</span><strong>${n}</strong></div>`).join("") : '<div class="risk-row"><span>Sem dados</span><strong>0</strong></div>';
     riskChart?.destroy();
-    riskChart = new Chart(document.getElementById("risk-chart"), { type: "doughnut", data: { labels: entradas.map(([r]) => r), datasets: [{ data: entradas.map(([, n]) => n), backgroundColor: entradas.map(([r]) => CORES_RISCO[r]), borderColor: "#0c1928", borderWidth: 3 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: "72%", plugins: { legend: { display: false } } } });
+    riskChart = new Chart(document.getElementById("risk-chart"), { type: "doughnut", data: { labels: entradas.map(([r]) => r), datasets: [{ data: entradas.map(([, n]) => n), backgroundColor: entradas.map(([r]) => CORES_RISCO[r]), borderColor: "#062847", borderWidth: 3 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: "72%", plugins: { legend: { display: false } } } });
 }
 
 function atualizarTabela(registros) {
