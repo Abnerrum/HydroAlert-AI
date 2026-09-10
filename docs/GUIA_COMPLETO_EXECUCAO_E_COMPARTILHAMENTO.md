@@ -4,6 +4,14 @@ Este documento registra o fluxo que foi implementado e validado no **HydroAlert 
 
 > **Importante:** o projeto é acadêmico. Os sensores, coordenadas, medições e classificações de risco são simulados e não substituem alertas oficiais da Defesa Civil, CEMADEN ou outros órgãos públicos.
 
+## Execução por um clique em qualquer sistema principal
+
+Para iniciar o projeto sem comandos específicos de cada sistema operacional, use o iniciador multiplataforma `INICIAR_HYDROALERT.py`. Ele é compatível com Windows, macOS e Linux, prepara os serviços com Docker Compose, aguarda a API ficar saudável e abre o dashboard. Também existem atalhos `INICIAR_HYDROALERT.bat`, `INICIAR_HYDROALERT.sh` e `INICIAR_HYDROALERT.command` para execução por clique.
+
+Consulte o guia dedicado para requisitos, opções, permissões e diagnóstico:
+
+`docs/GUIA_INICIADOR_MULTIPLATAFORMA.md`
+
 ## 1. O que já foi implementado
 
 ### Etapa 1 — Simulador IoT ✅ Validada
