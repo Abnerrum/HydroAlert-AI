@@ -20,6 +20,9 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(resposta.status_code, 200)
         corpo = resposta.json()
         self.assertEqual(corpo["status"], "ok")
+        self.assertIn("timestamp", corpo)
+        self.assertEqual(corpo["api_version"], "2.0.0")
+        self.assertIn(corpo["modo_dados"], {"simulado", "mongodb_com_fallback"})
         self.assertIn("mongodb", corpo)
         self.assertGreater(corpo["sensores_configurados"], 0)
 

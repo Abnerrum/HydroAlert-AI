@@ -1,4 +1,5 @@
 import os
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query, Request
@@ -75,6 +76,9 @@ def dashboard():
 def health():
     return {
         "status": "ok",
+        "timestamp": datetime.now(UTC).isoformat(),
+        "api_version": app.version,
+        "modo_dados": "simulado" if not os.getenv("MONGO_URI") else "mongodb_com_fallback",
         "mongodb": status_mongodb(),
         "machine_learning": status_modelo(),
         "sensores_configurados": len(SENSORES),

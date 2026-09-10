@@ -9,6 +9,7 @@ let catalogo = { sensores: [] };
 let painelAtual = null;
 let camadaMapa = "risco";
 let pontoSelecionadoId = null;
+let atualizacaoEmAndamento = false;
 
 const estadoSelect = document.getElementById("estado-select");
 const municipioSelect = document.getElementById("municipio-select");
@@ -44,13 +45,27 @@ function pt(valor) {
     return NOMES_PT[valor] || valor || "--";
 }
 
+/**
+ * Escapa valores externos antes de inseri-los em blocos HTML.
+ * Os dados podem vir do MongoDB, de arquivos JSONL ou de fontes públicas.
+ */
+function escapeHtml(valor) {
+    return String(valor ?? "--")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
 function riscoNormalizado(risco) {
     return String(risco || "SEM_DADOS").toUpperCase();
 }
 
 function badgeRisco(risco) {
     const valor = riscoNormalizado(risco);
-    return `<span class="badge ${valor}">${valor.replaceAll("_", " ")}</span>`;
+    const classe = Object.hasOwn(CORES_RISCO, valor) ? valor : "DESCONHECIDO";
+    return `<span class="badge ${classe}">${escapeHtml(valor.replaceAll("_", " "))}</span>`;
 }
 
 function formatarData(valor) {
@@ -272,7 +287,7 @@ function atualizarLegendaMapa() {
 }
 
 function popupPonto(ponto) {
-    return `<div class="map-popup"><strong>${ponto.sensor_id}</strong><span>${pt(ponto.municipio)} • ${pt(ponto.bairro)}</span><span>Nível: ${Number(ponto.nivel_m || 0).toFixed(3)} m</span><span>Chuva: ${Number(ponto.chuva_mm || 0).toFixed(2)} mm</span><span>Tendência: ${ponto.tendencia || "--"}</span><div class="popup-risk">${badgeRisco(ponto.risco)}</div></div>`;
+    return `<div class="map-popup"><strong>${escapeHtml(ponto.sensor_id)}</strong><span>${escapeHtml(pt(ponto.municipio))} • ${escapeHtml(pt(ponto.bairro))}</span><span>Nível: ${Number(ponto.nivel_m || 0).toFixed(3)} m</span><span>Chuva: ${Number(ponto.chuva_mm || 0).toFixed(2)} mm</span><span>Tendência: ${escapeHtml(ponto.tendencia)}</span><div class="popup-risk">${badgeRisco(ponto.risco)}</div></div>`;
 }
 
 function atualizarMapa(pontos) {
@@ -327,7 +342,7 @@ function atualizarAlertas(pontos) {
     }
     lista.innerHTML = relevantes.map((p) => {
         const risco = riscoNormalizado(p.risco);
-        return `<div class="alert-item" data-sensor="${p.sensor_id}"><i class="alert-color" style="background:${CORES_RISCO[risco] || CORES_RISCO.SEM_DADOS}"></i><div class="alert-copy"><strong>${p.sensor_id} • ${pt(p.municipio)}</strong><span>${pt(p.bairro)} • ${risco.replaceAll("_", " ")}</span></div><div class="alert-value"><strong>${Number(p.nivel_m || 0).toFixed(3)} m</strong><small>${Number(p.chuva_mm || 0).toFixed(1)} mm</small></div></div>`;
+        return `<div class="alert-item" data-sensor="${escapeHtml(p.sensor_id)}"><i class="alert-color" style="background:${CORES_RISCO[risco] || CORES_RISCO.SEM_DADOS}"></i><div class="alert-copy"><strong>${escapeHtml(p.sensor_id)} • ${escapeHtml(pt(p.municipio))}</strong><span>${escapeHtml(pt(p.bairro))} • ${escapeHtml(risco.replaceAll("_", " "))}</span></div><div class="alert-value"><strong>${Number(p.nivel_m || 0).toFixed(3)} m</strong><small>${Number(p.chuva_mm || 0).toFixed(1)} mm</small></div></div>`;
     }).join("");
     lista.querySelectorAll(".alert-item").forEach((el) => el.addEventListener("click", () => selecionarPonto(el.dataset.sensor)));
 }
@@ -386,7 +401,7 @@ function atualizarTabela(registros) {
     if (!registros.length) {
         corpo.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhuma telemetria disponível para este território.</td></tr>';
     } else {
-        corpo.innerHTML = registros.slice(0, 30).map((r) => `<tr><td>${formatarData(r.timestamp)}</td><td>${pt(r.localizacao?.municipio)}</td><td>${pt(r.localizacao?.bairro)}</td><td><strong>${r.sensor_id || "--"}</strong></td><td>${Number(r.chuva_mm || 0).toFixed(2)} mm</td><td>${Number(r.nivel_m || 0).toFixed(3)} m</td><td>${String(r.tendencia || "--").replaceAll("_", " ")}</td><td>${badgeRisco(r.risco)}</td></tr>`).join("");
+        corpo.innerHTML = registros.slice(0, 30).map((r) => `<tr><td>${escapeHtml(formatarData(r.timestamp))}</td><td>${escapeHtml(pt(r.localizacao?.municipio))}</td><td>${escapeHtml(pt(r.localizacao?.bairro))}</td><td><strong>${escapeHtml(r.sensor_id)}</strong></td><td>${Number(r.chuva_mm || 0).toFixed(2)} mm</td><td>${Number(r.nivel_m || 0).toFixed(3)} m</td><td>${escapeHtml(String(r.tendencia || "--").replaceAll("_", " "))}</td><td>${badgeRisco(r.risco)}</td></tr>`).join("");
     }
     const agora = new Date().toLocaleTimeString("pt-BR");
     document.getElementById("updated-at").textContent = `Atualizado ${agora}`;
@@ -432,6 +447,8 @@ async function carregarStatus() {
 }
 
 async function atualizarDashboard() {
+    if (atualizacaoEmAndamento) return;
+    atualizacaoEmAndamento = true;
     refreshBtn.classList.add("loading");
     try {
         const resposta = await fetch(`/api/painel?${parametrosPainel().toString()}`);
@@ -456,6 +473,7 @@ async function atualizarDashboard() {
         document.getElementById("api-status").className = "status-dot error";
     } finally {
         refreshBtn.classList.remove("loading");
+        atualizacaoEmAndamento = false;
     }
 }
 
