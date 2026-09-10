@@ -5,11 +5,22 @@ let sensorChart;
 let cityChart;
 let mapa;
 let camadaMarcadores;
+let camadaRegioes;
 let catalogo = { sensores: [] };
 let painelAtual = null;
 let camadaMapa = "risco";
 let pontoSelecionadoId = null;
 let atualizacaoEmAndamento = false;
+let visaoRegional = "brasil";
+
+const VISTAS_REGIONAIS = {
+    norte: { nome: "Região Norte", descricao: "Camada de referência territorial para a Região Norte.", centro: [-4.4, -60.0], zoom: 4.7, bounds: [[-13.5, -73.9], [5.3, -44.0]], cor: "#38bdf8" },
+    nordeste: { nome: "Região Nordeste", descricao: "Camada de referência territorial para a Região Nordeste.", centro: [-9.5, -40.7], zoom: 5.0, bounds: [[-18.4, -48.0], [-1.0, -34.7]], cor: "#facc15" },
+    "centro-oeste": { nome: "Região Centro-Oeste", descricao: "Camada de referência territorial para a Região Centro-Oeste.", centro: [-15.8, -54.2], zoom: 5.0, bounds: [[-24.0, -61.0], [-7.0, -46.0]], cor: "#a78bfa" },
+    sudeste: { nome: "Região Sudeste", descricao: "Camada de referência territorial para a Região Sudeste.", centro: [-21.2, -43.2], zoom: 5.5, bounds: [[-25.5, -53.2], [-14.0, -39.0]], cor: "#fb923c" },
+    sul: { nome: "Região Sul", descricao: "Camada de referência territorial para a Região Sul.", centro: [-27.4, -51.2], zoom: 5.7, bounds: [[-34.0, -57.7], [-22.4, -48.0]], cor: "#34d399" },
+    goias: { nome: "Goiás", descricao: "Sensores simulados e operação detalhada do estado de Goiás.", centro: [-16.3, -49.3], zoom: 7, bounds: [[-19.5, -53.3], [-12.4, -45.8]], cor: "#22d3ee" },
+};
 
 const estadoSelect = document.getElementById("estado-select");
 const municipioSelect = document.getElementById("municipio-select");
@@ -112,6 +123,52 @@ function criarMapa() {
         attribution: "&copy; OpenStreetMap contributors",
     }).addTo(mapa);
     camadaMarcadores = L.layerGroup().addTo(mapa);
+    camadaRegioes = L.layerGroup().addTo(mapa);
+}
+
+function atualizarCamadaRegional() {
+    camadaRegioes?.clearLayers();
+    const chaves = visaoRegional === "brasil" ? Object.keys(VISTAS_REGIONAIS).filter((chave) => chave !== "goias") : [visaoRegional];
+    for (const chave of chaves) {
+        const vista = VISTAS_REGIONAIS[chave];
+        const destaque = chave === visaoRegional;
+        L.rectangle(vista.bounds, {
+            color: vista.cor,
+            weight: destaque ? 2 : 1,
+            fillColor: vista.cor,
+            fillOpacity: destaque ? .10 : .035,
+            dashArray: destaque ? undefined : "5 6",
+        }).addTo(camadaRegioes);
+        L.marker(vista.centro, {
+            icon: L.divIcon({
+                className: "region-label",
+                html: `<span style="--region-color:${vista.cor}">${vista.nome}</span>`,
+                iconAnchor: [0, 0],
+            }),
+        }).addTo(camadaRegioes);
+    }
+    const vista = VISTAS_REGIONAIS[visaoRegional];
+    const boundsBrasil = [[-34.0, -74.0], [5.3, -34.0]];
+    mapa.fitBounds(vista?.bounds || boundsBrasil, { padding: [28, 28], maxZoom: vista?.zoom || 4.2 });
+}
+
+function atualizarTextoRegional() {
+    const vista = VISTAS_REGIONAIS[visaoRegional];
+    document.getElementById("region-view-title").textContent = visaoRegional === "brasil" ? "Brasil • visão por regiões" : vista.nome;
+    document.getElementById("region-view-description").textContent = visaoRegional === "brasil" ? "Selecione uma região para centralizar o mapa e a operação." : vista.descricao;
+    document.querySelectorAll(".region-tab").forEach((botao) => botao.classList.toggle("active", botao.dataset.regionView === visaoRegional));
+}
+
+function selecionarVisaoRegional(visao) {
+    if (visao !== "brasil" && !VISTAS_REGIONAIS[visao]) return;
+    visaoRegional = visao;
+    atualizarTextoRegional();
+    atualizarCamadaRegional();
+    if (visao === "goias") {
+        estadoSelect.value = "Goias";
+        atualizarFiltrosDependentes("estado");
+        atualizarDashboard();
+    }
 }
 
 function preencherSelect(select, valores, placeholder, valorAtual = "") {
@@ -310,9 +367,9 @@ function atualizarMapa(pontos) {
         bounds.push([ponto.latitude, ponto.longitude]);
     }
 
-    if (bounds.length === 1) mapa.setView(bounds[0], 13);
-    else if (bounds.length > 1) mapa.fitBounds(bounds, { padding: [35, 35], maxZoom: 11 });
-    else mapa.setView([-16.4, -49.2], 7);
+    atualizarCamadaRegional();
+    if (visaoRegional === "goias" && bounds.length === 1) mapa.setView(bounds[0], 13);
+    else if (visaoRegional === "goias" && bounds.length > 1) mapa.fitBounds(bounds, { padding: [35, 35], maxZoom: 11 });
     atualizarLegendaMapa();
 }
 
@@ -493,8 +550,13 @@ document.querySelectorAll(".layer-btn").forEach((btn) => {
     });
 });
 
+document.querySelectorAll(".region-tab").forEach((btn) => {
+    btn.addEventListener("click", () => selecionarVisaoRegional(btn.dataset.regionView));
+});
+
 (async function iniciar() {
     criarMapa();
+    atualizarTextoRegional();
     try {
         await carregarCatalogo();
         await atualizarDashboard();

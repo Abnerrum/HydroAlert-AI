@@ -26,6 +26,13 @@ class TestAPI(unittest.TestCase):
         self.assertIn("mongodb", corpo)
         self.assertGreater(corpo["sensores_configurados"], 0)
 
+    def test_headers_de_seguranca(self):
+        resposta = self.client.get("/health")
+        self.assertEqual(resposta.headers["x-content-type-options"], "nosniff")
+        self.assertEqual(resposta.headers["x-frame-options"], "SAMEORIGIN")
+        self.assertEqual(resposta.headers["referrer-policy"], "strict-origin-when-cross-origin")
+        self.assertIn("default-src 'self'", resposta.headers["content-security-policy"])
+
     def test_listar_sensores(self):
         resposta = self.client.get("/api/sensores")
         self.assertEqual(resposta.status_code, 200)

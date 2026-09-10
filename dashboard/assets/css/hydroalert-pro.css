@@ -165,6 +165,19 @@ main { width: min(1660px, calc(100% - 44px)); margin-top: 18px; }
     background: rgba(9, 20, 34, .82);
     backdrop-filter: blur(12px);
 }
+.region-explorer { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 11px; padding: 15px 16px; border: 1px solid rgba(56, 189, 248, .14); border-radius: 16px; background: linear-gradient(105deg, rgba(14, 165, 233, .10), rgba(99, 102, 241, .035) 58%, rgba(5, 15, 26, .72)); box-shadow: var(--shadow-soft); }
+.region-explorer-copy { min-width: 220px; }
+.region-explorer-copy .panel-kicker { margin-bottom: 5px; }
+.region-explorer-copy strong, .region-explorer-copy span { display: block; }
+.region-explorer-copy strong { font-size: 14px; letter-spacing: -.01em; }
+.region-explorer-copy span { margin-top: 4px; color: var(--muted-2); font-size: 10px; }
+.region-tabs { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.region-tab { min-height: 32px; padding: 0 10px; border: 1px solid rgba(148, 163, 184, .12); border-radius: 999px; color: #8299ad; background: rgba(2, 10, 18, .34); box-shadow: none; font-size: 10px; font-weight: 700; }
+.region-tab:hover { color: #eaf8ff; border-color: rgba(56, 189, 248, .34); }
+.region-tab.active { color: #f7fdff; border-color: rgba(56, 189, 248, .40); background: linear-gradient(135deg, rgba(14, 165, 233, .28), rgba(37, 99, 235, .18)); box-shadow: 0 7px 18px rgba(14, 165, 233, .12); }
+.region-tab.goias-tab { color: #8ce9da; border-color: rgba(34, 211, 238, .22); }
+.region-label { background: transparent; border: 0; }
+.region-label span { display: block; width: max-content; padding: 5px 8px; border: 1px solid var(--region-color); border-radius: 999px; color: #e8f8ff; background: rgba(5, 14, 25, .83); box-shadow: 0 8px 18px rgba(0, 0, 0, .22); font-size: 10px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; }
 .breadcrumb { flex-wrap: wrap; }
 .source-pill,
 .metric-tag { background: rgba(255, 255, 255, .02); }
@@ -410,6 +423,8 @@ tbody tr:hover { background: rgba(56, 189, 248, .045); }
     .status-box strong { font-size: 10px; }
     main { width: calc(100% - 24px); margin-top: 12px; }
     .location-filters { grid-template-columns: 1fr 1fr; }
+    .region-explorer { align-items: stretch; flex-direction: column; gap: 12px; }
+    .region-tabs { justify-content: flex-start; }
     .kpi-grid { grid-template-columns: 1fr 1fr; }
     .panel { padding: 14px; }
     .panel-header { flex-direction: column; }
@@ -424,6 +439,8 @@ tbody tr:hover { background: rgba(56, 189, 248, .045); }
     .kpi-grid,
     .point-metrics { grid-template-columns: 1fr; }
     .scope-actions { width: 100%; }
+    .region-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .region-tab { width: 100%; }
     .source-pill { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
     .kpi-card { min-height: 122px; }
     #hydro-map { height: 380px; }

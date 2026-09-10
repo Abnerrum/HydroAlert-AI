@@ -1,3 +1,4 @@
+import hmac
 import os
 from datetime import UTC, datetime
 from pathlib import Path
@@ -7,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from database.mongodb import status_mongodb
 from iot.config import SENSORES
@@ -34,6 +36,10 @@ app = FastAPI(
 
 _origens_env = os.getenv("CORS_ORIGINS", "*")
 CORS_ORIGINS = [origem.strip() for origem in _origens_env.split(",") if origem.strip()]
+_hosts_env = os.getenv("ALLOWED_HOSTS", "*")
+ALLOWED_HOSTS = [host.strip() for host in _hosts_env.split(",") if host.strip()]
+
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
 
 app.add_middleware(
     CORSMiddleware,
@@ -49,12 +55,28 @@ async def verificar_token_api(request: Request, call_next):
     """Protege /api/* quando API_TOKEN estiver configurado."""
     token = os.getenv("API_TOKEN")
     if token and request.url.path.startswith("/api"):
-        if request.headers.get("X-API-Key") != token:
+        if not hmac.compare_digest(request.headers.get("X-API-Key", ""), token):
             return JSONResponse(
                 status_code=401,
                 content={"detail": "Token de API ausente ou invalido."},
             )
     return await call_next(request)
+
+
+@app.middleware("http")
+async def cabecalhos_de_seguranca(request: Request, call_next):
+    """Aplica headers defensivos sem bloquear os assets externos do dashboard."""
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://unpkg.com; "
+        "style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https:; "
+        "connect-src 'self' https:; font-src 'self' data: https:; frame-ancestors 'self'"
+    )
+    return response
 
 
 app.mount("/static", StaticFiles(directory=str(DASHBOARD_DIR)), name="static")
