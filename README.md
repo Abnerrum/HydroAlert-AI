@@ -156,6 +156,19 @@ npm run dev
 
 O Vite abre a interface com atualização automática e encaminha `/api` para o FastAPI.
 
+## Centro de operações nacional
+
+O front-end React inclui módulos de visão nacional, mapa de risco/calor,
+consulta por CEP ou localização, clima, pontos seguros e rota demonstrativa,
+alertas no navegador, histórico, ranking municipal, IA explicável, previsão
+de 1h/3h/6h e área demonstrativa da Defesa Civil. A aplicação também possui
+manifesto e service worker para instalação como PWA.
+
+> Pontos seguros, rotas e acesso de operador são demonstrações acadêmicas.
+> Envio real por WhatsApp/SMS/e-mail, cadastro nacional de abrigos e autenticação
+> institucional dependem de provedores, credenciais e homologação dos órgãos
+> responsáveis.
+
 ### Simulação MQTT contínua
 
 ```powershell
