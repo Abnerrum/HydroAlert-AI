@@ -55,7 +55,7 @@ services:
       CORS_ORIGINS: "*"
       ALLOWED_HOSTS: "*"
     ports:
-      - "8000:8000"
+      - "8080:8000"
     volumes:
       - hydro_dados:/app/data
       - hydro_models:/app/models
