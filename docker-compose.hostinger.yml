@@ -1,8 +1,9 @@
 services:
   mosquitto:
     image: eclipse-mosquitto:2
+    command: >
+      sh -c "printf 'listener 1883\\nallow_anonymous true\\npersistence true\\npersistence_location /mosquitto/data/\\n' > /tmp/mosquitto.conf && mosquitto -c /tmp/mosquitto.conf"
     volumes:
-      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - mosquitto_dados:/mosquitto/data
     healthcheck:
       test: ["CMD-SHELL", "mosquitto_pub -h localhost -t hydroalert/health -m ok >/dev/null 2>&1 || exit 1"]
