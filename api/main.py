@@ -31,7 +31,7 @@ DASHBOARD_DIR = BASE_DIR / "dashboard"
 app = FastAPI(
     title="HydroAlert AI API",
     description="API academica para telemetria hidrometeorologica, analise territorial, alertas preditivos e ML.",
-    version="2.0.0",
+    version="3.0.0",
 )
 
 _origens_env = os.getenv("CORS_ORIGINS", "*")

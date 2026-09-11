@@ -32,3 +32,6 @@ Thumbs.db
 *.pkl
 /models/*
 !/models/.gitkeep
+# Front-end React
+frontend/node_modules/
+frontend/dist/
