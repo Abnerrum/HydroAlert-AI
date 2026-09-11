@@ -1,3 +1,11 @@
+FROM node:22-alpine AS frontend
+
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend ./
+RUN npm run build
+
 FROM python:3.12-slim
 
 ARG TARGETARCH
@@ -18,7 +26,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY api ./api
-COPY dashboard ./dashboard
+COPY --from=frontend /dashboard ./dashboard
 COPY database ./database
 COPY iot ./iot
 COPY ml ./ml
