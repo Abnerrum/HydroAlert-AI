@@ -50,7 +50,7 @@ services:
       API_TOKEN: ""
       LOG_LEVEL: INFO
     ports:
-      - "3000:8000"
+      - "8000:8000"
     volumes:
       - ./:/app
       - hydro_dados:/app/data
@@ -66,6 +66,24 @@ services:
       timeout: 5s
       retries: 10
       start_period: 15s
+    restart: unless-stopped
+
+  frontend:
+    image: node:22-alpine
+    container_name: hydroalert-frontend
+    working_dir: /frontend
+    command: sh -c "npm install --no-audit --no-fund && npm run dev -- --host 0.0.0.0 --port 5173"
+    environment:
+      API_PROXY_TARGET: http://api:8000
+      __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS:
+    ports:
+      - "3000:5173"
+    volumes:
+      - ./frontend:/frontend
+      - frontend_node_modules:/frontend/node_modules
+    depends_on:
+      api:
+        condition: service_healthy
     restart: unless-stopped
 
   subscriber:
@@ -121,3 +139,4 @@ volumes:
   hydro_dados:
   hydro_models:
   mosquitto_dados:
+  frontend_node_modules:
