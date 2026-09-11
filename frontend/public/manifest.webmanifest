@@ -1,0 +1,10 @@
+{
+  "name": "HydroAlert AI Brasil",
+  "short_name": "HydroAlert",
+  "description": "Monitoramento acadêmico preditivo de inundações urbanas",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06101c",
+  "theme_color": "#0b8dce",
+  "icons": []
+}

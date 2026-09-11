@@ -70,7 +70,7 @@ async def cabecalhos_de_seguranca(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "SAMEORIGIN"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(self)"
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://unpkg.com; "
         "style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https:; "
