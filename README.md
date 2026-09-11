@@ -1,4 +1,4 @@
-# HydroAlert AI v2
+# HydroAlert AI v3 — Brasil
 
 Protótipo acadêmico de **alerta preditivo de inundações urbanas** com integração de IoT, MQTT, NoSQL, Data Science, Business Intelligence e revisão humana.
 
@@ -23,6 +23,9 @@ A versão foi revisada para ficar mais coerente com o Relatório Inicial do Proj
 - exportação ampliada para Power BI;
 - API com indicadores de governança e validação, pronta para evolução do dashboard;
 - catálogo de Open-Meteo, CEMADEN, ANA/Hidroweb, INMET e CIMEHGO.
+- front-end responsivo em React + Vite;
+- navegação nacional pelas 27 UFs e municípios oficiais do IBGE;
+- mapa operacional nacional com indicação transparente das áreas ainda sem sensores.
 
 ## Arquitetura
 
@@ -53,9 +56,10 @@ Sensores simulados / fontes públicas
 - Pandas
 - Scikit-learn / Random Forest
 - Joblib
-- HTML, CSS e JavaScript
-- Chart.js
-- Leaflet + OpenStreetMap
+- React + Vite
+- Recharts
+- React Leaflet + OpenStreetMap
+- API de Localidades do IBGE
 - Power BI via exportação CSV
 - Docker Desktop / Docker Compose
 - Git / GitHub
@@ -64,7 +68,8 @@ Sensores simulados / fontes públicas
 
 ```text
 api/                 FastAPI e endpoints
-dashboard/           Centro de operações web
+frontend/            aplicação React e código-fonte do centro de operações
+dashboard/           build estático servido pelo FastAPI
 database/            MongoDB
 iot/                 simulador, publisher e subscriber MQTT
 ml/                  features, treino e inferência
@@ -136,6 +141,20 @@ Ou diretamente pelo Docker Compose:
 ```powershell
 docker compose up -d --build mosquitto mongo subscriber api
 ```
+
+O Docker compila o front-end React automaticamente antes de montar a imagem da API.
+
+### Desenvolvimento do front-end React
+
+Com a API na porta 8000, use outro terminal:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+O Vite abre a interface com atualização automática e encaminha `/api` para o FastAPI.
 
 ### Simulação MQTT contínua
 

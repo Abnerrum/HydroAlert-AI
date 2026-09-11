@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import unicodedata
 from copy import deepcopy
 
 from iot.config import SENSORES
@@ -11,6 +12,26 @@ from services.telemetry_service import calcular_resumo, obter_telemetria
 
 SENSOR_POR_ID = {sensor["sensor_id"]: sensor for sensor in SENSORES}
 
+# Divisão territorial oficial do Brasil (27 unidades federativas). O catálogo
+# permite que clientes web naveguem nacionalmente mesmo antes da instalação de
+# sensores em uma determinada UF.
+ESTADOS_BRASIL = [
+    {"uf": "AC", "nome": "Acre"}, {"uf": "AL", "nome": "Alagoas"},
+    {"uf": "AP", "nome": "Amapá"}, {"uf": "AM", "nome": "Amazonas"},
+    {"uf": "BA", "nome": "Bahia"}, {"uf": "CE", "nome": "Ceará"},
+    {"uf": "DF", "nome": "Distrito Federal"}, {"uf": "ES", "nome": "Espírito Santo"},
+    {"uf": "GO", "nome": "Goiás"}, {"uf": "MA", "nome": "Maranhão"},
+    {"uf": "MT", "nome": "Mato Grosso"}, {"uf": "MS", "nome": "Mato Grosso do Sul"},
+    {"uf": "MG", "nome": "Minas Gerais"}, {"uf": "PA", "nome": "Pará"},
+    {"uf": "PB", "nome": "Paraíba"}, {"uf": "PR", "nome": "Paraná"},
+    {"uf": "PE", "nome": "Pernambuco"}, {"uf": "PI", "nome": "Piauí"},
+    {"uf": "RJ", "nome": "Rio de Janeiro"}, {"uf": "RN", "nome": "Rio Grande do Norte"},
+    {"uf": "RS", "nome": "Rio Grande do Sul"}, {"uf": "RO", "nome": "Rondônia"},
+    {"uf": "RR", "nome": "Roraima"}, {"uf": "SC", "nome": "Santa Catarina"},
+    {"uf": "SP", "nome": "São Paulo"}, {"uf": "SE", "nome": "Sergipe"},
+    {"uf": "TO", "nome": "Tocantins"},
+]
+
 
 def catalogo_localidades() -> dict:
     estados = sorted({sensor["estado"] for sensor in SENSORES})
@@ -19,16 +40,25 @@ def catalogo_localidades() -> dict:
     bairros = sorted({sensor["bairro"] for sensor in SENSORES})
 
     return {
+        "pais": "Brasil",
+        "estados_brasil": ESTADOS_BRASIL,
         "estados": estados,
         "municipios": municipios,
         "regioes": regioes,
         "bairros": bairros,
         "sensores": SENSORES,
+        "cobertura": {
+            "ufs_disponiveis": 27,
+            "ufs_monitoradas": sorted({sensor["uf"] for sensor in SENSORES}),
+            "municipios_monitorados": len(municipios),
+            "observacao": "Cobertura territorial preparada; dados dependem de sensores integrados.",
+        },
     }
 
 
 def _normalizar(valor: str | None) -> str:
-    return (valor or "").strip().casefold()
+    texto = unicodedata.normalize("NFKD", (valor or "").strip().casefold())
+    return "".join(caractere for caractere in texto if not unicodedata.combining(caractere))
 
 
 def filtrar_sensores(
@@ -41,8 +71,10 @@ def filtrar_sensores(
     resultado = []
 
     for sensor in SENSORES:
-        if estado and _normalizar(sensor["estado"]) != _normalizar(estado):
-            continue
+        if estado:
+            estado_filtro = _normalizar(estado)
+            if estado_filtro not in {_normalizar(sensor["estado"]), _normalizar(sensor["uf"])}:
+                continue
         if municipio and _normalizar(sensor["municipio"]) != _normalizar(municipio):
             continue
         if regiao and _normalizar(sensor["regiao"]) != _normalizar(regiao):

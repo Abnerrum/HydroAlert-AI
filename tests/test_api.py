@@ -21,7 +21,7 @@ class TestAPI(unittest.TestCase):
         corpo = resposta.json()
         self.assertEqual(corpo["status"], "ok")
         self.assertIn("timestamp", corpo)
-        self.assertEqual(corpo["api_version"], "2.0.0")
+        self.assertEqual(corpo["api_version"], "3.0.0")
         self.assertIn(corpo["modo_dados"], {"simulado", "mongodb_com_fallback"})
         self.assertIn("mongodb", corpo)
         self.assertGreater(corpo["sensores_configurados"], 0)
@@ -42,6 +42,8 @@ class TestAPI(unittest.TestCase):
         resposta = self.client.get("/api/localidades")
         self.assertEqual(resposta.status_code, 200)
         self.assertIn("Goiania", resposta.json()["municipios"])
+        self.assertEqual(len(resposta.json()["estados_brasil"]), 27)
+        self.assertIn("GO", resposta.json()["cobertura"]["ufs_monitoradas"])
 
     def test_painel(self):
         resposta = self.client.get("/api/painel")
@@ -55,6 +57,13 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(resposta.status_code, 200)
         corpo = resposta.json()
         self.assertEqual(corpo["territorio"]["municipios"], ["Anapolis"])
+
+    def test_painel_aceita_uf_e_acentos_do_ibge(self):
+        resposta = self.client.get(
+            "/api/painel", params={"estado": "GO", "municipio": "Goiânia"}
+        )
+        self.assertEqual(resposta.status_code, 200)
+        self.assertGreater(resposta.json()["territorio"]["sensores_configurados"], 0)
 
     def test_alertas(self):
         resposta = self.client.get("/api/alertas")
