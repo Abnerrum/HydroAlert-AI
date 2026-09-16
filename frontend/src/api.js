@@ -1,7 +1,15 @@
 const headers = import.meta.env.VITE_API_TOKEN ? { 'X-API-Key': import.meta.env.VITE_API_TOKEN } : {}
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+
+function apiUrl(path) {
+  if (!path) return API_BASE_URL || '/'
+  if (/^https?:\/\//i.test(path)) return path
+  const normalized = path.startsWith('/') ? path : `/${path}`
+  return `${API_BASE_URL}${normalized}`
+}
 
 export async function api(path) {
-  const response = await fetch(path, { headers })
+  const response = await fetch(apiUrl(path), { headers })
   if (!response.ok) throw new Error(`Falha na API (${response.status})`)
   return response.json()
 }
