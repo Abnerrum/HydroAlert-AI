@@ -1,5 +1,8 @@
+import { demoResponse } from './demo'
+
 const headers = import.meta.env.VITE_API_TOKEN ? { 'X-API-Key': import.meta.env.VITE_API_TOKEN } : {}
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
 function apiUrl(path) {
   if (!path) return API_BASE_URL || '/'
@@ -9,9 +12,15 @@ function apiUrl(path) {
 }
 
 export async function api(path) {
-  const response = await fetch(apiUrl(path), { headers })
-  if (!response.ok) throw new Error(`Falha na API (${response.status})`)
-  return response.json()
+  if (DEMO_MODE) return demoResponse(path)
+  try {
+    const response = await fetch(apiUrl(path), { headers })
+    if (!response.ok) throw new Error(`Falha na API (${response.status})`)
+    return response.json()
+  } catch (error) {
+    if (!API_BASE_URL) return demoResponse(path)
+    throw error
+  }
 }
 
 export async function municipiosPorUf(uf) {
