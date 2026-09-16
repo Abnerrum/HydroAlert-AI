@@ -1,10 +1,28 @@
 name: Deploy HydroAlert AI to Hostinger
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/**'
+      - 'frontend/**'
+      - 'database/**'
+      - 'iot/**'
+      - 'ml/**'
+      - 'services/**'
+      - 'Dockerfile'
+      - 'docker-compose.hostinger.yml'
+      - 'requirements.txt'
+      - '.github/workflows/deploy-hostinger.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: hydroalert-hostinger-production
+  cancel-in-progress: true
 
 jobs:
   deploy:
