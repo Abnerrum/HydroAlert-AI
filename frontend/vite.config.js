@@ -49,9 +49,11 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    host: true,
+    allowedHosts: true,
     proxy: {
-      '/api': 'http://localhost:8000',
-      '/health': 'http://localhost:8000',
+      '/api': process.env.VITE_API_PROXY || 'http://localhost:8000',
+      '/health': process.env.VITE_API_PROXY || 'http://localhost:8000',
     },
   },
 })
