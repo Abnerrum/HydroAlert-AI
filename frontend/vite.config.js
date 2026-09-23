@@ -32,7 +32,7 @@ function brazilMapViewPlugin() {
 
       let updated = code.replace(
         'const BRASIL = [-14.235, -51.9253]',
-        'const BRASIL = [-14.235, -51.9253]\\nconst BRASIL_BOUNDS = [[-33.75, -73.99], [5.27, -34.79]]',
+        'const BRASIL = [-14.235, -51.9253]\nconst BRASIL_BOUNDS = [[-33.75, -73.99], [5.27, -34.79]]',
       )
       updated = updated.replace(originalAdjust, nationalAdjust)
       updated = updated.replace('<Ajustar pontos={pontos} busca={busca}/>', '<Ajustar busca={busca}/>')
