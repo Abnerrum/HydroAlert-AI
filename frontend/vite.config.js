@@ -32,7 +32,7 @@ function brazilMapViewPlugin() {
 
       let updated = code.replace(
         'const BRASIL = [-14.235, -51.9253]',
-        'const BRASIL = [-14.235, -51.9253]\\nconst BRASIL_BOUNDS = [[-33.75, -73.99], [5.27, -34.79]]',
+        'const BRASIL = [-14.235, -51.9253]\nconst BRASIL_BOUNDS = [[-33.75, -73.99], [5.27, -34.79]]',
       )
       updated = updated.replace(originalAdjust, nationalAdjust)
       updated = updated.replace('<Ajustar pontos={pontos} busca={busca}/>', '<Ajustar busca={busca}/>')
@@ -49,9 +49,11 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    host: true,
+    allowedHosts: true,
     proxy: {
-      '/api': 'http://localhost:8000',
-      '/health': 'http://localhost:8000',
+      '/api': process.env.VITE_API_PROXY || 'http://localhost:8000',
+      '/health': process.env.VITE_API_PROXY || 'http://localhost:8000',
     },
   },
 })
