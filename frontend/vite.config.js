@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 
 const isNetlify = process.env.NETLIFY === 'true'
 const isGitHubPages = process.env.GITHUB_ACTIONS === 'true'
+const isVercel = process.env.VERCEL === '1'
 
 function brazilMapViewPlugin() {
   const originalAdjust = `function Ajustar({pontos,busca}) {
@@ -47,7 +48,7 @@ export default defineConfig({
   base: isGitHubPages ? '/HydroAlert-AI/' : '/',
   plugins: [react(), brazilMapViewPlugin()],
   build: {
-    outDir: isNetlify ? 'dist' : '../dashboard',
+    outDir: (isNetlify || isVercel) ? 'dist' : '../dashboard',
     emptyOutDir: true,
   },
   server: {
