@@ -79,7 +79,30 @@ async def cabecalhos_de_seguranca(request: Request, call_next):
     return response
 
 
+# O build Vite referencia /assets/* na raiz. Sem esse mount, o React
+# nao carrega e a pagina inicial fica em branco (404 nos arquivos JS/CSS).
+app.mount("/assets", StaticFiles(directory=str(DASHBOARD_DIR / "assets")), name="assets")
 app.mount("/static", StaticFiles(directory=str(DASHBOARD_DIR)), name="static")
+
+
+@app.get("/manifest.webmanifest", include_in_schema=False)
+def manifesto():
+    return FileResponse(DASHBOARD_DIR / "manifest.webmanifest", media_type="application/manifest+json")
+
+
+@app.get("/sw.js", include_in_schema=False)
+def service_worker():
+    return FileResponse(DASHBOARD_DIR / "sw.js", media_type="text/javascript")
+
+
+@app.get("/share.js", include_in_schema=False)
+def share_js():
+    return FileResponse(DASHBOARD_DIR / "share.js", media_type="text/javascript")
+
+
+@app.get("/share.css", include_in_schema=False)
+def share_css():
+    return FileResponse(DASHBOARD_DIR / "share.css", media_type="text/css")
 
 
 class RevisaoEntrada(BaseModel):
