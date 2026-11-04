@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -115,7 +115,7 @@ def registrar_revisao(alerta_id: str, decisao: str, revisor: str, justificativa:
         "decisao": decisao,
         "revisor": revisor.strip(),
         "justificativa": justificativa.strip(),
-        "revisado_em": datetime.now(timezone.utc).isoformat(),
+        "revisado_em": datetime.now(UTC).isoformat(),
     }
     historico = _ler()
     historico.append(registro)

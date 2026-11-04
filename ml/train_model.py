@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import joblib
@@ -120,7 +120,7 @@ def treinar_modelo() -> dict:
 
     artefato = {
         "version": MODEL_VERSION,
-        "trained_at": datetime.now(timezone.utc).isoformat(),
+        "trained_at": datetime.now(UTC).isoformat(),
         "models": modelos,
         "features": FEATURES,
         "metrics": {

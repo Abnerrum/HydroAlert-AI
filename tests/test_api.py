@@ -26,6 +26,22 @@ class TestAPI(unittest.TestCase):
         self.assertIn("mongodb", corpo)
         self.assertGreater(corpo["sensores_configurados"], 0)
 
+    def test_frontend_assets_servidos_na_raiz(self):
+        """O build Vite requer /assets, e nao somente /static."""
+        from pathlib import Path
+        from api.main import DASHBOARD_DIR
+
+        index = self.client.get("/")
+        self.assertEqual(index.status_code, 200)
+        self.assertIn('id="root"', index.text)
+        pasta = Path(DASHBOARD_DIR) / "assets"
+        js = next(pasta.glob("index-*.js"))
+        css = next(pasta.glob("index-*.css"))
+        self.assertEqual(self.client.get(f"/assets/{js.name}").status_code, 200)
+        self.assertEqual(self.client.get(f"/assets/{css.name}").status_code, 200)
+        self.assertEqual(self.client.get("/manifest.webmanifest").status_code, 200)
+        self.assertEqual(self.client.get("/sw.js").status_code, 200)
+
     def test_headers_de_seguranca(self):
         resposta = self.client.get("/health")
         self.assertEqual(resposta.headers["x-content-type-options"], "nosniff")
