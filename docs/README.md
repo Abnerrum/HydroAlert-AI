@@ -18,6 +18,9 @@ Esta pasta concentra a documentação técnica e acadêmica do Projeto Integrado
 - `ETAPAS_07_A_12_ANALISE_AVANCADA.md` — evolução analítica.
 - `ETAPA_08_MAPA_TERRITORIAL.md` — geointeligência e mapa.
 
+- `DADOS_SIMULADOS_E_REAIS.md` — origem, diferenças, fluxos, ensaios e limitações dos dados simulados, medidos por ESP32 e consultados de fontes públicas.
+- `ESP32_HARDWARE_REAL.md` — montagem, conexão e execução do hardware de bancada.
+
 ### Execução e validação
 - `GUIA_COMPLETO_EXECUCAO_E_COMPARTILHAMENTO.md` — execução local, demonstração e compartilhamento.
 - `VALIDACAO_V2.md` — validações e limitações atuais.
