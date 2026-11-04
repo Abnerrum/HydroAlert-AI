@@ -35,3 +35,7 @@ Thumbs.db
 # Front-end React
 frontend/node_modules/
 frontend/dist/
+
+# Coleta fisica
+/data/esp32_real.csv
+/data/esp32_real.jsonl

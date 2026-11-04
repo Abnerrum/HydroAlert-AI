@@ -1,5 +1,11 @@
 # HydroAlert AI v3 — Brasil
 
+## Instalar no Windows depois de extrair o ZIP
+
+Abra **INSTALAR_TUDO.bat** e escolha **1** para sensores USB ou **2** para o projeto completo. O instalador prepara Python, ambiente virtual, ferramentas ESP32 e bibliotecas DHT, e compila o firmware. No modo completo tambem prepara as dependencias do painel e instala Docker Desktop se necessario. Internet necessaria; termos, drivers especificos e configuracao WSL2 podem exigir intervencao.
+
+Depois de gravar o firmware pela Arduino IDE, abra **COLETAR_ESP32.bat** para salvar os dados em CSV/JSONL. [Guia completo de instalacao](docs/INSTALACAO_WINDOWS.md) e [ligacoes dos sensores](docs/COLETA_ESP32_USB.md). A coleta fisica fica separada do dashboard de simulacao.
+
 Protótipo acadêmico de **alerta preditivo de inundações urbanas** com integração de IoT, MQTT, NoSQL, Data Science, Business Intelligence e revisão humana.
 
 > **Uso acadêmico.** Sensores, coordenadas, cotas, manchas e parte da base incluída no projeto são simulados. O sistema não é um serviço oficial de alerta e não deve ser utilizado para decisões de segurança pública.
