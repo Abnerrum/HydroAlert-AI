@@ -10,8 +10,34 @@ function Find-Python {
     }
     $launcher = Get-Command py -ErrorAction SilentlyContinue
     if ($launcher) {
-        $found = & $launcher.Source -3.12 -c 'import sys; print(sys.executable)' 2>$null
-        if ($LASTEXITCODE -eq 0 -and $found) { return ($found | Select-Object -Last 1) }
+        # Windows PowerShell 5.1 pode transformar stderr nativo em erro
+        # terminante com ErrorActionPreference=Stop. Uma sondagem negativa
+        # deve retornar null para permitir a instalacao automatica.
+        $process = $null
+        try {
+            $info = New-Object System.Diagnostics.ProcessStartInfo
+            $info.FileName = $launcher.Source
+            $info.Arguments = '-3.12 -c "import sys; print(sys.executable)"'
+            $info.UseShellExecute = $false
+            $info.RedirectStandardOutput = $true
+            $info.RedirectStandardError = $true
+            $info.CreateNoWindow = $true
+            $process = New-Object System.Diagnostics.Process
+            $process.StartInfo = $info
+            [void]$process.Start()
+            $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+            $stderrTask = $process.StandardError.ReadToEndAsync()
+            $process.WaitForExit()
+            $found = $stdoutTask.GetAwaiter().GetResult().Trim()
+            [void]$stderrTask.GetAwaiter().GetResult()
+            if ($process.ExitCode -eq 0 -and $found -and (Test-Path -LiteralPath $found)) {
+                return $found
+            }
+        } catch {
+            # Launcher ausente/quebrado ou runtime nao encontrado: usar winget.
+        } finally {
+            if ($null -ne $process) { $process.Dispose() }
+        }
     }
     return $null
 }
