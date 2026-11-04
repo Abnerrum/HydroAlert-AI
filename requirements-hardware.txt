@@ -1,0 +1,2 @@
+# Coletor USB independente: nao exige Docker, MongoDB ou MQTT.
+pyserial>=3.5,<4
