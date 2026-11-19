@@ -1,5 +1,5 @@
 // Cache só dos arquivos do site. Dados meteorológicos externos devem vir da fonte.
-const CACHE = 'hydroalert-v5-brasil'
+const CACHE = 'hydroalert-v6-fontes-publicas'
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting())

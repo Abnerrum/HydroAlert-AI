@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test src/meteoBrasil.test.js src/estadosBrasil.test.js src/simuladorNacional.test.js tests/focos-inpe.test.mjs"
+    "test": "node --test src/meteoBrasil.test.js src/estadosBrasil.test.js src/indicadoresFontes.test.js src/demo.test.js tests/focos-inpe.test.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",

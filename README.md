@@ -27,6 +27,15 @@ Se a imagem estiver privada, é necessário autenticar no GHCR e/ou ajustar a vi
 
 A nova aba **Queimadas INPE** consulta arquivos CSV públicos do Programa Queimadas do INPE por meio de função Netlify ou da API FastAPI (`GET /api/queimadas`). Mostra focos de calor detectados por satélite, UF, satélite, data e coordenadas, com atualização automática de **10 em 10 minutos**, horário da última edição e indicação de indisponibilidade. **Detecção não equivale a incêndio confirmado.** Consulte [documentação da fonte](docs/QUEIMADAS_INPE.md).
 
+## Visão nacional com fontes públicas (padrão da hospedagem)
+
+A página inicial da versão hospedada exibe **dados consultados**, não números inventados:
+- **Open-Meteo**: temperatura e precipitação meteorológica **modeladas** para até 27 capitais, com atualização de 10 minutos e horários exibidos. Esses valores vêm da API pública, mas **não** são observações de estações físicas.
+- **INPE**: focos de calor detectados por satélite em arquivos públicos recentes, exibindo quantidade e data da publicação. Não são incêndios confirmados.
+- **ANA e Cemaden**: nível dos rios e medições de estações físicas **ainda não integrados** à hospedagem; exibidos como **Sem dados**.
+
+Não afirmamos possuir 100 sensores físicos por UF. A rede com 2.700 nós da versão anterior foi removida do painel principal e dos indicadores. O gerador acadêmico permanece no código para estudos, **sem execução automática na hospedagem**. Consulte [Fontes públicas e limites](docs/PAINEL_FONTES_PUBLICAS.md).
+
 ## Rede nacional de demonstração: 100 sensores VIRTUAIS por UF
 
 O front-end demonstrativo no Netlify gera uma **rede 100% simulada de 2.700 nós virtuais** (100 em cada uma das 27 UFs) para testar mapa, filtros, cenários e escalabilidade. Ao escolher um estado como **MT (Mato Grosso)**, o painel exibe 100 sensores virtuais com IDs `VIRT-MT-001` a `VIRT-MT-100`. Na visão Brasil, o mapa exibe uma amostra de 108 nós para desempenho, mas o total configurado permanece 2.700.
