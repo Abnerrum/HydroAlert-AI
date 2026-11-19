@@ -7,7 +7,7 @@ import {
 import { consultarClimaBrasil, consultarMunicipio } from './meteoBrasil'
 import {
   estatisticasMeteorologicas, estatisticasFocos, formatarValor,
-  fonteRecente, pontosMeteorologicosValidos,
+  fonteRecente, pontosMeteorologicosValidos, selecionarDadosMunicipais,
 } from './indicadoresFontes'
 import './visao-fontes-publicas.css'
 
@@ -119,10 +119,10 @@ export default function VisaoFontesPublicas({ uf='', municipio='', estados=[] })
 
   useEffect(()=>setSelecionada(''),[uf,municipio])
   const agora=Date.now()
-  const estat=useMemo(()=>estatisticasMeteorologicas(clima,uf,agora),[clima,uf,ultimaConsulta])
+  const dadosSelecao=useMemo(()=>selecionarDadosMunicipais(clima,uf,municipio,local),[clima,uf,municipio,local])
+  const estat=useMemo(()=>estatisticasMeteorologicas(dadosSelecao,uf,agora),[dadosSelecao,uf,ultimaConsulta])
   const fo=useMemo(()=>estatisticasFocos(incendios,uf),[incendios,uf])
-  const todosPontos=pontosMeteorologicosValidos(estat.pontos)
-  const locais=pontosMeteorologicosValidos(local ? [local] : todosPontos)
+  const locais=pontosMeteorologicosValidos(estat.pontos)
   const marcado=local||locais.find(p=>p.uf===selecionada)|| (uf?locais[0]:null)
   const focosValidos=pontosMeteorologicosValidos(fo.focos)
   const estacoesReais=0 // nenhuma estação hidrológica autenticada/validada está conectada
@@ -145,13 +145,13 @@ export default function VisaoFontesPublicas({ uf='', municipio='', estados=[] })
       <span><i className="fonte-ponto cinza"/> ANA/Cemaden · estações não integradas</span>
     </div>
     <div className="fonte-cards">
-      <Card icone={MapPin} nome="Capitais com clima recente"
-        valor={clima?estat.atualizados+'/'+(uf?1:27):'Sem dados'}
+      <Card icone={MapPin} nome={municipio?'Município com clima recente':'Capitais com clima recente'}
+        valor={clima?estat.atualizados+'/'+(municipio||uf?1:27):'Sem dados'}
         detalhe="Valores modelados, até 4h de idade"/>
-      <Card icone={Thermometer} nome={uf?'Temperatura na capital':'Média das capitais'}
+      <Card icone={Thermometer} nome={municipio?'Temperatura no município':uf?'Temperatura na capital':'Média das capitais'}
         valor={formatarValor(estat.tempMediaCapitais,' °C')}
         detalhe="Open-Meteo · média apenas onde disponível" tom="cyan"/>
-      <Card icone={CloudRain} nome="Capitais com chuva"
+      <Card icone={CloudRain} nome={municipio?'Município com chuva':'Capitais com chuva'}
         valor={clima?estat.comChuva+'/'+estat.comChuvaDada:'Sem dados'}
         detalhe="Precipitação modelada no intervalo da fonte" tom="purple"/>
       <Card icone={Flame} nome={uf?'Focos na UF':'Focos de calor recentes'}
@@ -219,7 +219,7 @@ export default function VisaoFontesPublicas({ uf='', municipio='', estados=[] })
         </div>
       </article>
       <article className="panel fonte-feed">
-        <div className="fonte-panel-title"><div><span>FONTE EXTERNA</span><h3>{uf?'Capital e focos desta UF':'Capitais brasileiras'}</h3></div></div>
+        <div className="fonte-panel-title"><div><span>FONTE EXTERNA</span><h3>{municipio?'Localidade consultada':uf?'Capital da UF':'Capitais brasileiras'}</h3></div></div>
         <div className="fonte-feed-scroll">
           {locais.length ? locais.map((p,i)=><button key={(p.uf||'LOCAL')+i}
             className={marcado===p?'ativo':''} onClick={()=>{setSelecionada(p.uf);setCamada('meteorologia')}}>
