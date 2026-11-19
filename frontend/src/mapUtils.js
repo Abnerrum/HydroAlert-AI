@@ -21,11 +21,12 @@ export const corRisco = (risco) => CORES_RISCO[risco] || CORES_RISCO.SEM_DADOS
 export function prepararPontos(registros) {
   if (!Array.isArray(registros)) return []
   return registros
-    .filter((p) => p && p.sensor_id)
+    .filter((p) => p && p.sensor_id
+      && p.latitude !== null && p.latitude !== undefined && p.latitude !== ''
+      && p.longitude !== null && p.longitude !== undefined && p.longitude !== '')
     .map((p) => ({ ...p, latitude: Number(p.latitude), longitude: Number(p.longitude) }))
     .filter((p) => Number.isFinite(p.latitude) && Number.isFinite(p.longitude)
-      && Math.abs(p.latitude) <= 90 && Math.abs(p.longitude) <= 180
-      && p.latitude !== 0 && p.longitude !== 0)
+      && Math.abs(p.latitude) <= 90 && Math.abs(p.longitude) <= 180)
 }
 
 export function normalizarBusca(valor) {
