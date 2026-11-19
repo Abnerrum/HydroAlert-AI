@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Circle, CircleMarker, MapContainer, Popup, TileLayer, useMap } from 'react-leaflet'
+import { Circle, CircleMarker, MapContainer, Popup, useMap } from 'react-leaflet'
 import {
   ChevronRight, Compass, Expand, Layers3, MapPin, Maximize2, Minimize2,
   Minus, Plus, Search, SlidersHorizontal, Waves, X,
@@ -8,25 +8,14 @@ import {
   CORES_RISCO, RISCOS, corRisco, filtrarPontos, formatarData,
   formatarMedida, prepararPontos,
 } from './mapUtils'
+import CamadaCartografica from './CamadaCartografica'
 import './mapa-operacional.css'
 
 const BRASIL = [-14.235, -51.9253]
 const CAMADAS = {
-  neutro: {
-    nome: 'Neutro',
-    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  },
-  ruas: {
-    nome: 'Ruas',
-    attribution: '&copy; OpenStreetMap contributors',
-    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  },
-  satelite: {
-    nome: 'Satélite',
-    attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  },
+  ruas: { nome: 'Ruas e lugares' },
+  claro: { nome: 'Mapa claro' },
+  satelite: { nome: 'Satélite' },
 }
 
 function Coordenadas({ pontos, selecionado, busca, atualizarVisao }) {
@@ -57,8 +46,12 @@ function Indicador({ cor, filhos }) {
 export default function MapaOperacional({
   pontos = [], busca, camada = 'risco', setCamada, abrigos = [],
 }) {
-  const [mapaBase, setMapaBase] = useState('neutro')
+  const [mapaBase, setMapaBase] = useState('ruas')
   const [texto, setTexto] = useState('')
+  const [endereco, setEndereco] = useState('')
+  const [localEncontrado, setLocalEncontrado] = useState(null)
+  const [buscaLocalEmCurso, setBuscaLocalEmCurso] = useState(false)
+  const [erroLocal, setErroLocal] = useState('')
   const [risco, setRisco] = useState('todos')
   const [selecionadoId, setSelecionadoId] = useState(null)
   const [expandido, setExpandido] = useState(false)
@@ -68,12 +61,13 @@ export default function MapaOperacional({
   const validos = useMemo(() => prepararPontos(pontos), [pontos])
   const filtrados = useMemo(() => filtrarPontos(validos, texto, risco), [validos, texto, risco])
   const selecionado = filtrados.find((p) => p.sensor_id === selecionadoId) || null
+  const buscaAtiva = localEncontrado || busca
   const resumo = useMemo(() => validos.reduce((acc, p) => {
     acc[p.risco] = (acc[p.risco] || 0) + 1
     return acc
   }, {}), [validos])
 
-  useEffect(() => { setSelecionadoId(null) }, [busca?.lat, busca?.lng])
+  useEffect(() => { setSelecionadoId(null) }, [buscaAtiva?.lat, buscaAtiva?.lng])
   useEffect(() => {
     if (!expandido) return undefined
     const fechar = (event) => { if (event.key === 'Escape') setExpandido(false) }
@@ -85,8 +79,41 @@ export default function MapaOperacional({
     return () => window.clearTimeout(id)
   }, [expandido])
 
+  async function localizarEndereco(event) {
+    event.preventDefault()
+    const termo = endereco.trim()
+    if (termo.length < 3 || buscaLocalEmCurso) return
+    setErroLocal('')
+    setBuscaLocalEmCurso(true)
+    try {
+      // Busca pontual iniciada pelo usuário; sem autocomplete para respeitar o Nominatim.
+      const url = new URL('https://nominatim.openstreetmap.org/search')
+      url.searchParams.set('format', 'json')
+      url.searchParams.set('limit', '1')
+      url.searchParams.set('accept-language', 'pt-BR')
+      url.searchParams.set('q', termo)
+      const resposta = await fetch(url.toString(), { headers: { Accept: 'application/json' } })
+      if (!resposta.ok) throw new Error('O serviço de busca está indisponível.')
+      const resultados = await resposta.json()
+      const ponto = resultados[0]
+      const lat = Number(ponto?.lat)
+      const lng = Number(ponto?.lon)
+      if (!ponto || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+        setErroLocal('Local não encontrado. Tente informar cidade e estado.')
+      } else {
+        setLocalEncontrado({ lat, lng, rotulo: ponto.display_name || termo })
+        setSelecionadoId(null)
+      }
+    } catch (erro) {
+      setErroLocal(erro.message || 'Não foi possível localizar o endereço.')
+    } finally {
+      setBuscaLocalEmCurso(false)
+    }
+  }
+
   const verTodos = () => {
     setSelecionadoId(null)
+    setLocalEncontrado(null)
     setReajustar((valor) => valor + 1)
   }
 
@@ -111,9 +138,8 @@ export default function MapaOperacional({
       <div className="geo-mapstage">
         <MapContainer center={BRASIL} zoom={5} scrollWheelZoom={true} zoomControl={false}
           className="geo-map" ref={mapaRef}>
-          <TileLayer key={mapaBase} url={CAMADAS[mapaBase].url}
-            attribution={CAMADAS[mapaBase].attribution} maxZoom={19} />
-          <Coordenadas pontos={filtrados} selecionado={selecionado} busca={busca} atualizarVisao={reajustar} />
+          <CamadaCartografica tipo={mapaBase} />
+          <Coordenadas pontos={filtrados} selecionado={selecionado} busca={buscaAtiva} atualizarVisao={reajustar} />
           {camada === 'calor' && filtrados.map((p) => <Circle
             key={'chuva-' + p.sensor_id} center={[p.latitude, p.longitude]}
             radius={Math.max(500, Math.min(12000, Number(p.chuva_acum_1h_mm || 0) * 250))}
@@ -142,12 +168,19 @@ export default function MapaOperacional({
               pathOptions={{ color: '#ffffff', fillColor: '#409ff3', fillOpacity: 1, weight: 2 }}>
               <Popup><b>{p.nome}</b><p>Ponto demonstrativo, não é abrigo verificado ou rota oficial.</p></Popup>
             </CircleMarker>)}
-          {busca && Number.isFinite(Number(busca.lat)) && Number.isFinite(Number(busca.lng)) &&
-            <CircleMarker center={[Number(busca.lat), Number(busca.lng)]} radius={11}
+          {buscaAtiva && Number.isFinite(Number(buscaAtiva.lat)) && Number.isFinite(Number(buscaAtiva.lng)) &&
+            <CircleMarker center={[Number(buscaAtiva.lat), Number(buscaAtiva.lng)]} radius={11}
               pathOptions={{ color: '#ffffff', fillColor: '#218ce4', fillOpacity: 1, weight: 3 }}>
-              <Popup><strong>{busca.rotulo || 'Local pesquisado'}</strong></Popup>
+              <Popup><strong>{buscaAtiva.rotulo || 'Local pesquisado'}</strong></Popup>
             </CircleMarker>}
         </MapContainer>
+        <form className="geo-place-search" onSubmit={localizarEndereco} role="search" aria-label="Buscar cidades e endereços no mapa">
+          <Search size={17} aria-hidden="true"/>
+          <input value={endereco} onChange={(e) => setEndereco(e.target.value)}
+            aria-label="Cidade ou endereço" placeholder="Pesquise cidade, rua ou endereço..." minLength={3} required/>
+          <button type="submit" disabled={buscaLocalEmCurso} aria-label="Buscar localização">{buscaLocalEmCurso ? 'Buscando…' : 'Buscar'}</button>
+        </form>
+        {erroLocal && <div className="geo-place-error" role="status">{erroLocal}</div>}
         <div className="geo-map-tools" role="group" aria-label="Ferramentas do mapa">
           <select aria-label="Tipo do mapa" value={mapaBase} onChange={(e) => setMapaBase(e.target.value)}>
             {Object.entries(CAMADAS).map(([valor, tipo]) => <option key={valor} value={valor}>{tipo.nome}</option>)}
@@ -164,7 +197,7 @@ export default function MapaOperacional({
           <button type="button" title="Diminuir zoom" aria-label="Diminuir zoom" onClick={() => mapaRef.current?.zoomOut()}><Minus size={17} /></button>
           <button type="button" title="Enquadrar todos" aria-label="Enquadrar todos" onClick={verTodos}><Expand size={17} /></button>
         </div>
-        <div className="geo-map-tag"><Layers3 size={13}/> Mapa interativo · dados ilustrativos</div>
+        <div className="geo-map-tag"><Layers3 size={13}/> Ruas e lugares reais · sensores demonstrativos</div>
       </div>
       <aside className="geo-points-panel" aria-label="Lista dos pontos de monitoramento">
         <div className="geo-rail-head">

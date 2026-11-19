@@ -31,3 +31,16 @@ npm run build
 ```
 
 Os testes verificam filtro textual, risco e exclusão de coordenadas inválidas. Verifique manualmente, ao abrir o site, o clique em marcadores, o mapa expandido e a rolagem da lista em tamanhos de tela distintos.
+
+## Base cartográfica sem chave de API (2026)
+
+O modo **Ruas e lugares** usa OpenFreeMap Bright com MapLibre GL Leaflet, e o **Mapa claro** usa o estilo Liberty. Nenhum dos dois exige chave de API. Em caso de incompatibilidade com WebGL ou falha de acesso, o sistema ativa o mapa de ruas do OpenStreetMap. O modo **Satélite** permanece com mosaico Esri. O serviço CARTO antigo foi removido porque a tela estava mostrando **API KEY REQUIRED**.
+
+Foi acrescentada uma busca manual de endereços por Nominatim/OSM (um pedido apenas ao clicar em Buscar, sem autocomplete). Os marcadores de sensores continuam acadêmicos e não são estações oficiais. Para usar os mapas proprietários do Google, seria necessária uma chave da Maps JavaScript API com faturamento habilitado.
+
+### Dependências
+
+- `maplibre-gl` e `@maplibre/maplibre-gl-leaflet`
+- Estilos públicos do OpenFreeMap: `https://tiles.openfreemap.org/styles/bright` e `https://tiles.openfreemap.org/styles/liberty`
+
+Lembre-se de manter os créditos dos fornecedores de mapa visíveis e de respeitar suas condições de uso. O acesso às camadas públicas exige conexão à internet.
