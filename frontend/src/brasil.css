@@ -1,0 +1,38 @@
+.national{margin:0 0 20px;display:grid;gap:14px}
+.national-head{display:flex;align-items:center;justify-content:space-between;gap:18px;background:linear-gradient(110deg,#0c2436,#0b1725);border:1px solid #1c3c50;border-radius:14px;padding:23px}
+.national-kicker{display:flex;align-items:center;gap:7px;letter-spacing:1.15px;color:#4ac8ed;font-size:10px;font-weight:800}
+.national-head h2{font-size:23px;margin:8px 0;color:#e6f4ff}
+.national-head p,.national-footnote{margin:0;font-size:12px;line-height:1.7;color:#93abc1}
+.national-refresh{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;background:#0d3b54;border:1px solid #2e6b8b;border-radius:9px;color:#ddf6ff;font-weight:700;font-size:12px;padding:11px 13px;cursor:pointer}
+.national-refresh:disabled{opacity:.5;cursor:wait}
+.national-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.national-stats>div{background:#0c1c2b;border:1px solid #20374b;border-radius:11px;padding:14px;min-width:0}
+.national-stats span,.national-stats small{display:block;color:#839eb2;font-size:11px}
+.national-stats strong{display:block;font-size:24px;margin:6px 0;color:#e9faff}
+.national-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.85fr);gap:14px}
+.national-panel-title{min-height:57px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid #253a4c}
+.national-panel-title strong{color:#e5f4ff;font-size:14px}
+.national-panel-title span{color:#84a0b5;font-size:11px}
+.national-panel-title div{display:flex;gap:7px}
+.national-panel-title button{cursor:pointer;background:#0b3045;border:1px solid #2b506c;color:#a9d9ec;border-radius:7px;padding:8px;font-size:11px}
+.national-map{height:495px;width:100%}
+.national-map-legend{background:#091c2c;border-top:1px solid #264056;padding:12px;color:#84a9bc;font-size:11px}
+.national-cities-panel{display:flex;flex-direction:column}
+.national-cities-scroll{max-height:240px;overflow-y:auto}
+.national-cities-scroll button{display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;text-align:left;width:100%;padding:12px 17px;background:transparent;border:0;border-bottom:1px solid #1d3242;color:#d1e9f2}
+.national-cities-scroll button:hover,.national-cities-scroll button.active{background:#153247}
+.national-cities-scroll b,.national-cities-scroll small{display:block;font-size:12px}
+.national-cities-scroll small{font-size:10px;color:#7793a8;margin-top:4px}
+.national-city-number{white-space:nowrap;font-size:13px;font-weight:800;color:#69dbdf}
+.national-detail{padding:17px;display:grid;gap:10px;border-top:1px solid #2b4556;background:#0a2031;flex:1}
+.national-detail h3{margin:0;color:#f3fbff;font-size:17px}
+.national-detail p,.national-detail small{font-size:11px;color:#92aabe;margin:0;line-height:1.55}
+.national-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.national-metrics>div{display:grid;gap:6px;border:1px solid #24485d;background:#0c2a3a;padding:12px;border-radius:9px;color:#63cce0;min-width:0}
+.national-metrics span{color:#95b4c5;font-size:10px}
+.national-metrics strong{font-size:14px;color:#f0fcff}
+.national-feedback{color:#d2c38e;font-size:11px;padding:0 16px}
+.national-error{padding:12px 15px;background:#3b221d;border:1px solid #82452f;color:#fbd9b4;border-radius:10px;font-size:12px}
+.national-footnote{background:#101d2a;border-left:3px solid #32a9e1;padding:11px 14px;border-radius:5px}
+@media(max-width:1000px){.national-stats{grid-template-columns:repeat(2,1fr)}.national-grid{grid-template-columns:1fr}.national-cities-scroll{max-height:220px}}
+@media(max-width:720px){.national-head{display:block;padding:16px}.national-refresh{margin-top:14px}.national-map{height:340px}.national-head h2{font-size:19px}.national-stats strong{font-size:21px}.national-panel-title{flex-wrap:wrap}}
