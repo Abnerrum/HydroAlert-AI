@@ -18,6 +18,7 @@ from services.alert_service import listar_revisoes, registrar_revisao
 from services.backtesting_service import executar_backtesting, exportar_power_bi
 from services.data_quality_service import avaliar_qualidade
 from services.esp32_service import consultar_esp32
+from services.meteorologia_brasil_service import consultar_meteorologia_brasil
 from services.public_data_service import catalogo_fontes, consultar_open_meteo
 from services.telemetry_service import calcular_resumo, obter_telemetria
 from services.territory_service import catalogo_localidades, montar_painel_territorial
@@ -251,6 +252,12 @@ def fontes_publicas():
         "fontes": catalogo_fontes(),
         "aviso": "Uso acadêmico; valide licença e disponibilidade na fonte.",
     }
+
+
+@app.get("/api/meteorologia/brasil")
+def meteorologia_brasil(forcar: bool = False):
+    """Meteorologia de 27 capitais; não são níveis dágua de rios."""
+    return consultar_meteorologia_brasil(forcar=forcar)
 
 
 @app.get("/api/clima-publico")

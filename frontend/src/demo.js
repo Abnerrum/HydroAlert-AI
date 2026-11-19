@@ -1,3 +1,7 @@
+import { consultarClimaBrasil } from './meteoBrasil'
+
+const ESTADOS_BRASIL = [{"uf":"AC","nome":"Acre"},{"uf":"AL","nome":"Alagoas"},{"uf":"AP","nome":"Amapá"},{"uf":"AM","nome":"Amazonas"},{"uf":"BA","nome":"Bahia"},{"uf":"CE","nome":"Ceará"},{"uf":"DF","nome":"Distrito Federal"},{"uf":"ES","nome":"Espírito Santo"},{"uf":"GO","nome":"Goiás"},{"uf":"MA","nome":"Maranhão"},{"uf":"MT","nome":"Mato Grosso"},{"uf":"MS","nome":"Mato Grosso do Sul"},{"uf":"MG","nome":"Minas Gerais"},{"uf":"PA","nome":"Pará"},{"uf":"PB","nome":"Paraíba"},{"uf":"PR","nome":"Paraná"},{"uf":"PE","nome":"Pernambuco"},{"uf":"PI","nome":"Piauí"},{"uf":"RJ","nome":"Rio de Janeiro"},{"uf":"RN","nome":"Rio Grande do Norte"},{"uf":"RS","nome":"Rio Grande do Sul"},{"uf":"RO","nome":"Rondônia"},{"uf":"RR","nome":"Roraima"},{"uf":"SC","nome":"Santa Catarina"},{"uf":"SP","nome":"São Paulo"},{"uf":"SE","nome":"Sergipe"},{"uf":"TO","nome":"Tocantins"}]
+
 const agora = () => new Date().toISOString()
 
 const pontosBase = [
@@ -58,13 +62,11 @@ function painel(url) {
 export function demoResponse(path) {
   if (path.startsWith('/api/localidades')) {
     return {
-      estados_brasil:[
-        {uf:'GO',nome:'Goiás'}, {uf:'DF',nome:'Distrito Federal'}, {uf:'MG',nome:'Minas Gerais'},
-        {uf:'SP',nome:'São Paulo'}, {uf:'RJ',nome:'Rio de Janeiro'}, {uf:'BA',nome:'Bahia'},
-      ],
+      estados_brasil: ESTADOS_BRASIL,
     }
   }
   if (path.startsWith('/api/painel')) return painel(path)
+  if (path.startsWith('/api/meteorologia/brasil')) return consultarClimaBrasil({ forcar: path.includes('forcar=true') })
   if (path.startsWith('/api/esp32/leituras')) return {
     fonte:'ESP32_FISICO_USB',status:'sem_leituras',quantidade:0,
     ultima_leitura:null,leituras:[],tem_nivel_calibrado:false,
