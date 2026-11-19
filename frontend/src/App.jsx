@@ -5,6 +5,7 @@ import { Activity, AlertTriangle, Bell, BrainCircuit, Building2, CloudRain, Data
 import { api, buscarCep, municipiosPorUf } from './api'
 import BrasilMeteorologia from './BrasilMeteorologia'
 import QueimadasBrasil from './QueimadasBrasil'
+import { ESTADOS_BRASIL, REGIOES_BRASIL } from './estadosBrasil'
 
 const BRASIL = [-14.235, -51.9253]
 const cores = { CRITICO:'#fb3f5c', ALTO:'#ff9f43', MODERADO:'#f8d45c', BAIXO:'#2bd9a8', SEM_DADOS:'#8494a9' }
@@ -45,7 +46,7 @@ function Mapa({pontos,busca,camada,setCamada,abrigo}) {
 }
 
 export default function App() {
-  const [catalogo,setCatalogo]=useState({estados_brasil:[]}), [painel,setPainel]=useState(null), [health,setHealth]=useState(null)
+  const [catalogo,setCatalogo]=useState({estados_brasil:ESTADOS_BRASIL}), [painel,setPainel]=useState(null), [health,setHealth]=useState(null)
   const [uf,setUf]=useState(''), [municipio,setMunicipio]=useState(''), [municipios,setMunicipios]=useState([])
   const [loading,setLoading]=useState(true), [erro,setErro]=useState(''), [aba,setAba]=useState('visao'), [camada,setCamada]=useState('risco'), [atualizado,setAtualizado]=useState(null)
   const [cep,setCep]=useState(''), [busca,setBusca]=useState(null), [clima,setClima]=useState(null)
@@ -59,7 +60,7 @@ export default function App() {
       const [p,h]=await Promise.all([api(`/api/painel?${q}`),api('/health')]);setPainel(p);setHealth(h);setAtualizado(new Date())
     } catch(e){setErro(e.message)} finally{setLoading(false)}
   }
-  useEffect(()=>{api('/api/localidades').then(d=>{setCatalogo(d);carregar('','')}).catch(e=>setErro(e.message))},[])
+  useEffect(()=>{api('/api/localidades').then(d=>{setCatalogo({...d,estados_brasil:ESTADOS_BRASIL});carregar('','')}).catch(e=>setErro(e.message))},[])
   useEffect(()=>{setMunicipio('');if(!uf){setMunicipios([]);carregar('','');return}municipiosPorUf(uf).then(setMunicipios).catch(e=>setErro(e.message));carregar(uf,'')},[uf])
   useEffect(()=>{const id=setInterval(()=>carregar(uf,municipio),30000);return()=>clearInterval(id)},[uf,municipio])
 
@@ -90,7 +91,7 @@ export default function App() {
       {[['visao','Painel'],['brasil','Clima Brasil'],['queimadas','Queimadas'],['mapa','Mapa'],['sensores','Sensores'],['esp32','ESP32']].map(([id,nome])=>
       <button type="button" key={id} className={aba===id?'active':''} aria-current={aba===id?'page':undefined} onClick={()=>setAba(id)}>{nome}</button>)}
     </div><header><div><p className="eyebrow">CENTRO NACIONAL DE OPERAÇÕES</p><h1>{nav.find(n=>n[0]===aba)?.[2]}</h1></div><div className="status"><i></i>{loading?'Atualizando dados':`Atualizado ${atualizado?.toLocaleTimeString('pt-BR')||'agora'}`}<button onClick={()=>carregar()}><RefreshCw size={17}/></button></div></header>
-    <section className="filters"><label>Estado<select value={uf} onChange={e=>setUf(e.target.value)}><option value="">Brasil — todos os estados</option>{catalogo.estados_brasil.map(e=><option key={e.uf} value={e.uf}>{e.nome} ({e.uf})</option>)}</select></label><label>Município<select value={municipio} disabled={!uf} onChange={e=>{setMunicipio(e.target.value);carregar(uf,e.target.value)}}><option value="">Todos os municípios</option>{municipios.map(m=><option key={m.id}>{m.nome}</option>)}</select></label><div className="coverage"><span>Área selecionada</span><b>{municipio||estado?.nome||'Brasil'}</b><small>{monitorada?`${pontos.length} ponto(s) configurado(s)`:'Expansão de sensores pendente'}</small></div></section>
+    <section className="filters"><label>Estado / Distrito Federal<select value={uf} onChange={e=>setUf(e.target.value)} aria-label="Escolher estado ou Distrito Federal"><option value="">Brasil — 27 UFs</option>{REGIOES_BRASIL.map(regiao=><optgroup key={regiao} label={regiao}>{ESTADOS_BRASIL.filter(e=>e.regiao===regiao).map(e=><option key={e.uf} value={e.uf}>{e.nome} ({e.uf})</option>)}</optgroup>)}</select></label><label>Município<select value={municipio} disabled={!uf} onChange={e=>{setMunicipio(e.target.value);carregar(uf,e.target.value)}}><option value="">Todos os municípios</option>{municipios.map(m=><option key={m.id}>{m.nome}</option>)}</select></label><div className="coverage"><span>Área selecionada</span><b>{municipio||estado?.nome||'Brasil'}</b><small>{monitorada?`${pontos.length} ponto(s) configurado(s)`:'Expansão de sensores pendente'}</small></div></section>
     {erro&&<div className="error">{erro}</div>}{!monitorada&&<div className="notice"><AlertTriangle/><div><b>Cobertura nacional preparada</b><span>A localidade ainda não possui sensores integrados. Nenhum risco é inventado.</span></div></div>}
 
     {aba==='brasil'&&<BrasilMeteorologia uf={uf} municipio={municipio} estados={catalogo.estados_brasil}/>}
