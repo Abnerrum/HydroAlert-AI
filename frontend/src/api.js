@@ -18,7 +18,7 @@ export async function api(path) {
     if (!response.ok) throw new Error(`Falha na API (${response.status})`)
     return response.json()
   } catch (error) {
-    if (!API_BASE_URL) return demoResponse(path)
+    // Não substituir falha da API real silenciosamente por valores demonstrativos.
     throw error
   }
 }
