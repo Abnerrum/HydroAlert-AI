@@ -22,6 +22,14 @@ export function formatarValor(valor, unidade = '', casas = 1) {
     minimumFractionDigits: casas, maximumFractionDigits: casas,
   }) + unidade
 }
+/** Se houver município selecionado, usar apenas o ponto consultado para
+ * esse município. Jamais herdar o clima da capital do mesmo estado.
+ */
+export function selecionarDadosMunicipais(dados, uf, municipio, local) {
+  if (!municipio) return dados
+  const valido = local && local.uf === uf && local.capital === municipio
+  return { pontos: valido ? [local] : [] }
+}
 export function estatisticasMeteorologicas(dados, uf = '', agora = Date.now()) {
   const pontos = Array.isArray(dados?.pontos) ? dados.pontos.filter(p => (!uf || p.uf === uf)) : []
   const recentes = pontos.filter(p => p.disponivel && fonteRecente(p.timestamp_utc, agora))

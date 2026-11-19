@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   estatisticasMeteorologicas, estatisticasFocos, formatarValor,
-  fonteRecente, pontosMeteorologicosValidos,
+  fonteRecente, pontosMeteorologicosValidos, selecionarDadosMunicipais,
 } from './indicadoresFontes.js'
 
 const agora = Date.parse('2026-11-19T20:00:00Z')
@@ -39,4 +39,13 @@ test('sem resposta INPE exibe indisponível, não zero focos', () => {
 })
 test('coordenadas inexistentes são descartadas, não inventadas',()=>{
  assert.equal(pontosMeteorologicosValidos([{latitude:-15,longitude:-55},{latitude:null,longitude:-55},{latitude:999,longitude:0}]).length,1)
+})
+
+test('município não herda leitura de outra cidade ou capital do estado',()=>{
+ const mt={pontos:[{uf:'MT',capital:'Cuiabá',disponivel:true,temperatura_c:40}]}
+ const sinop={uf:'MT',capital:'Sinop',disponivel:true,temperatura_c:25}
+ assert.deepEqual(selecionarDadosMunicipais(mt,'MT','Sinop',null).pontos,[])
+ assert.equal(selecionarDadosMunicipais(mt,'MT','Sinop',sinop).pontos[0].temperatura_c,25)
+ assert.deepEqual(selecionarDadosMunicipais(mt,'MT','Sinop',{uf:'MT',capital:'Cuiabá'}).pontos,[])
+ assert.equal(selecionarDadosMunicipais(mt,'MT','',null),mt)
 })
