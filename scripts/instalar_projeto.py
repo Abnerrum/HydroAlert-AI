@@ -1,10 +1,10 @@
 """Instalacao Windows retomavel; nao grava firmware nem altera drivers USB."""
 
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 URL_ESP32 = "https://espressif.github.io/arduino-esp32/package_esp32_index.json"
