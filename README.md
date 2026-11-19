@@ -23,6 +23,10 @@ docker pull ghcr.io/abnerrum/hydroalert-ai:v3.0.0
 
 Se a imagem estiver privada, é necessário autenticar no GHCR e/ou ajustar a visibilidade em **Packages → hydroalert-ai → Package settings → Change visibility**. O contêiner executa a API e o painel, **não** inclui dados de sensores reais, banco MongoDB ou leituras do ESP32. Para a arquitetura completa, consulte o `docker-compose.yml` e a documentação; a hospedagem do site e o pacote Docker são coisas diferentes.
 
+## Mapa cartográfico interativo (2026)
+
+O mapa tem lista lateral pesquisável, filtros por risco, seleção de sensores, zoom, tela expandida, visualizações **neutra / ruas / satélite** e painel de detalhes. Os pontos do dashboard podem ser simulados, e os locais de apoio não são abrigos verificados. Consulte o [guia de mapa interativo](docs/MAPA_INTERATIVO.md).
+
 ## ESP32 físico com leituras separadas da simulação (2026)
 
 A aba **ESP32 físico** do React consulta `GET /api/esp32/leituras` para mostrar medições reais recebidas via USB, sem misturar com os resultados do simulador. O HC-SR04 exige calibração e o DHT11 não mede chuva. [Guia completo de montagem, coleta, testes e limites](docs/INTEGRACAO_ESP32_REAL.md).
