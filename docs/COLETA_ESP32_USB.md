@@ -79,11 +79,13 @@ Este conjunto mede **distancia, temperatura e umidade relativa do ar**.
 Umidade nao e precipitacao: `chuva_mm` fica ausente porque nao ha pluviometro.
 Nao inventa coordenadas, cotas de alerta ou classificacao de risco.
 
-A coleta fica separada da simulacao. O dashboard/MQTT existente exige
+A coleta fica separada da simulacao. O dashboard territorial/MQTT de simulacao exige
 `chuva_mm` numerica e nivel valido; por isso estes arquivos **nao entram
-automaticamente no painel nem no treino de ML**. Nao publique esses pacotes
+automaticamente no mapa/alertas nem no treino de ML**. Em compensacao, a nova
+rota `GET /api/esp32/leituras` e a aba **ESP32 fisico** mostram os valores
+medidos por USB em area propria; veja [guia atualizado](INTEGRACAO_ESP32_REAL.md). Nao publique esses pacotes
 no topico de telemetria existente: serao rejeitados pelo contrato atual.
-Uma integracao posterior precisa tratar chuva ausente em indicadores/ML,
+Uma futura integracao com os indicadores/ML precisa tratar chuva ausente,
 cadastrar localizacao real e definir cotas adequadas ao local.
 
 ## Validacao

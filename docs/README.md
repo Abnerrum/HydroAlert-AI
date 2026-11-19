@@ -50,3 +50,6 @@ A organização foi feita de forma incremental para não quebrar imports Python,
 ## Avaliação experimental (2026)
 
 - [Resultados e método reprodutível com seed 42](RESULTADOS_EXPERIMENTAIS_2026.md) — dados simulados, métricas RF vs. persistência e limitações.
+
+### Hardware e coleta real
+- [Integração do ESP32 físico no painel](INTEGRACAO_ESP32_REAL.md) — USB, calibração, API, React e limites.
