@@ -27,6 +27,12 @@ Se a imagem estiver privada, é necessário autenticar no GHCR e/ou ajustar a vi
 
 A nova aba **Queimadas INPE** consulta arquivos CSV públicos do Programa Queimadas do INPE por meio de função Netlify ou da API FastAPI (`GET /api/queimadas`). Mostra focos de calor detectados por satélite, UF, satélite, data e coordenadas, com atualização automática de **10 em 10 minutos**, horário da última edição e indicação de indisponibilidade. **Detecção não equivale a incêndio confirmado.** Consulte [documentação da fonte](docs/QUEIMADAS_INPE.md).
 
+## Seletor de todos os estados brasileiros
+
+O filtro **Estado / Distrito Federal** mostra as **27 unidades federativas (26 estados + DF)**, organizadas nas cinco regiões do Brasil. O catálogo é carregado diretamente no front-end, mesmo se a API de localidades estiver temporariamente indisponível. Ao selecionar uma UF, os municípios são consultados pelo IBGE.
+
+**Atenção:** selecionar uma UF não significa que existam sensores hidrológicos nesse estado. A telemetria experimental permanece restrita aos sensores configurados; meteorologia e queimadas usam fontes próprias e mostram sua disponibilidade de dados.
+
 ## Meteorologia nacional: 27 UFs (2026)
 
 A seção **Meteorologia Brasil** consulta **dados meteorológicos modelados** do Open-Meteo para as **27 capitais** (uma localização de referência por UF) e permite consultar outros municípios selecionados nos filtros do IBGE. O site estático Netlify consulta a fonte diretamente, sem precisar do FastAPI. O backend também oferece `GET /api/meteorologia/brasil` com cache de 10 minutos.
