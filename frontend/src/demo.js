@@ -1,5 +1,5 @@
-import { consultarClimaBrasil } from './meteoBrasil'
-import { ESTADOS_BRASIL } from './estadosBrasil'
+import { consultarClimaBrasil } from './meteoBrasil.js'
+import { ESTADOS_BRASIL } from './estadosBrasil.js'
 
 /**
  * O nome do módulo é legado: na hospedagem estática há fontes PÚBLICAS,
