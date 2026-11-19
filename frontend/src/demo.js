@@ -65,6 +65,11 @@ export function demoResponse(path) {
     }
   }
   if (path.startsWith('/api/painel')) return painel(path)
+  if (path.startsWith('/api/esp32/leituras')) return {
+    fonte:'ESP32_FISICO_USB',status:'sem_leituras',quantidade:0,
+    ultima_leitura:null,leituras:[],tem_nivel_calibrado:false,
+    observacao:'Site demonstrativo sem API/ESP32 conectado. Nenhum dado físico foi recebido.',
+  }
   if (path.startsWith('/api/clima-publico')) return { disponivel:true, precipitacao_mm:3.2, precipitation:3.2, fonte:'demo' }
   if (path === '/health' || path.startsWith('/health?')) {
     return {

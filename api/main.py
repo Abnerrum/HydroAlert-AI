@@ -17,6 +17,7 @@ from ml.model_service import prever_horizontes, prever_proximo_nivel, status_mod
 from services.alert_service import listar_revisoes, registrar_revisao
 from services.backtesting_service import executar_backtesting, exportar_power_bi
 from services.data_quality_service import avaliar_qualidade
+from services.esp32_service import consultar_esp32
 from services.public_data_service import catalogo_fontes, consultar_open_meteo
 from services.telemetry_service import calcular_resumo, obter_telemetria
 from services.territory_service import catalogo_localidades, montar_painel_territorial
@@ -153,6 +154,15 @@ def painel(
         sensor_id=sensor_id,
         limite=limite,
     )
+
+
+@app.get("/api/esp32/leituras")
+def esp32_leituras(
+    limite: int = Query(default=50, ge=1, le=500),
+    sensor_id: str | None = Query(default=None, max_length=64),
+):
+    """Dados físicos por USB, sem completar dados ausentes com simulação."""
+    return consultar_esp32(limite=limite, sensor_id=sensor_id)
 
 
 @app.get("/api/telemetria")

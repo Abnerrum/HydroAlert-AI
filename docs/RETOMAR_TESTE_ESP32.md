@@ -91,3 +91,7 @@ A preparação com `INSTALAR_TUDO.bat` já terminou no computador de teste. Não
 - O conjunto não inclui pluviômetro; `chuva_mm` permanece null, sem inventar chuva zero.
 - Testar distância com a mão não comprova medição de nível de rio.
 - Coleta física ainda separada do dashboard/MQTT/treino de ML. Não há confirmação de integração automática nem de previsão com dados reais.
+
+## Evolução do código em 19/11/2026
+
+Foi preparada uma API exclusiva `/api/esp32/leituras` e uma aba React **ESP32 físico**, que leem o JSONL produzido pelo coletor USB sem misturar dados simulados. O histórico de teste físico acima continua válido: **não foi confirmada uma COM funcional, firmware gravado ou amostra real**. Consulte [INTEGRACAO_ESP32_REAL.md](INTEGRACAO_ESP32_REAL.md).
