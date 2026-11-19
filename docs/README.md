@@ -47,3 +47,6 @@ HydroAlert-AI/
 ```
 
 A organização foi feita de forma incremental para não quebrar imports Python, Docker, rotas FastAPI ou arquivos já usados nas demonstrações.
+## Avaliação experimental (2026)
+
+- [Resultados e método reprodutível com seed 42](RESULTADOS_EXPERIMENTAIS_2026.md) — dados simulados, métricas RF vs. persistência e limitações.

@@ -1,6 +1,6 @@
 import os
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pymongo import ASCENDING, DESCENDING, MongoClient
 from pymongo.collection import Collection
@@ -81,7 +81,7 @@ def status_mongodb() -> dict:
 
 def salvar_telemetria(dados: dict) -> str:
     documento = deepcopy(dados)
-    documento["recebido_em"] = datetime.now(timezone.utc)
+    documento["recebido_em"] = datetime.now(UTC)
     resultado = obter_colecao().insert_one(documento)
     return str(resultado.inserted_id)
 

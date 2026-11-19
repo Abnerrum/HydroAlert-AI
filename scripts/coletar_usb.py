@@ -1,8 +1,8 @@
 """Escolhe uma porta enumerada sem interpolar entrada em comandos de shell."""
 
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 
 def main():
