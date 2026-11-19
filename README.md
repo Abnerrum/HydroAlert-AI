@@ -13,6 +13,16 @@ Protótipo acadêmico de **alerta preditivo de inundações urbanas** com integr
 
 > **Uso acadêmico.** Sensores, coordenadas, cotas, manchas e parte da base incluída no projeto são simulados. O sistema não é um serviço oficial de alerta e não deve ser utilizado para decisões de segurança pública.
 
+## Pacote Docker (GitHub Packages)
+
+A imagem do aplicativo é publicada automaticamente pelo GitHub Actions no **GitHub Container Registry**:
+
+```bash
+docker pull ghcr.io/abnerrum/hydroalert-ai:v3.0.0
+```
+
+Se a imagem estiver privada, é necessário autenticar no GHCR e/ou ajustar a visibilidade em **Packages → hydroalert-ai → Package settings → Change visibility**. O contêiner executa a API e o painel, **não** inclui dados de sensores reais, banco MongoDB ou leituras do ESP32. Para a arquitetura completa, consulte o `docker-compose.yml` e a documentação; a hospedagem do site e o pacote Docker são coisas diferentes.
+
 ## ESP32 físico com leituras separadas da simulação (2026)
 
 A aba **ESP32 físico** do React consulta `GET /api/esp32/leituras` para mostrar medições reais recebidas via USB, sem misturar com os resultados do simulador. O HC-SR04 exige calibração e o DHT11 não mede chuva. [Guia completo de montagem, coleta, testes e limites](docs/INTEGRACAO_ESP32_REAL.md).

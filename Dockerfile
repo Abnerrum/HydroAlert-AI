@@ -2,11 +2,16 @@ FROM node:22-alpine AS frontend
 
 WORKDIR /frontend
 COPY frontend/package*.json ./
-RUN npm install
+RUN npm ci
 COPY frontend ./
 RUN npm run build
 
 FROM python:3.12-slim
+
+LABEL org.opencontainers.image.source="https://github.com/Abnerrum/HydroAlert-AI" \
+      org.opencontainers.image.title="HydroAlert-AI" \
+      org.opencontainers.image.description="Protótipo acadêmico de monitoramento hidrometeorológico" \
+      org.opencontainers.image.version="3.0.0"
 
 ARG TARGETARCH
 

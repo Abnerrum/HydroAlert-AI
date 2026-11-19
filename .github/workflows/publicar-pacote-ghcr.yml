@@ -1,0 +1,48 @@
+name: Publicar pacote Docker do HydroAlert-AI no GHCR
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Dockerfile'
+      - '.dockerignore'
+      - '.github/workflows/publicar-pacote-ghcr.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publicar-pacote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar codigo-fonte
+        uses: actions/checkout@v4
+
+      - name: Preparar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Autenticar no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Montar e publicar imagem vinculada ao repositorio
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ghcr.io/abnerrum/hydroalert-ai:v3.0.0
+            ghcr.io/abnerrum/hydroalert-ai:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/Abnerrum/HydroAlert-AI
+            org.opencontainers.image.title=HydroAlert-AI
+            org.opencontainers.image.description=Protótipo acadêmico de monitoramento hidrometeorológico
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
