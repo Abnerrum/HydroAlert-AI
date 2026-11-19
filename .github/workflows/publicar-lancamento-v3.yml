@@ -1,0 +1,32 @@
+name: Publicar lançamento v3.0.0 do HydroAlert-AI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publicar-lancamento-v3.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publicar v3.0.0 no GitHub Releases
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout da versão
+        uses: actions/checkout@v4
+      - name: Publicar lançamento se ainda não existir
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view v3.0.0 >/dev/null 2>&1; then
+            echo "Release v3.0.0 já existente; sem alterações."
+            exit 0
+          fi
+          gh release create v3.0.0 \
+            --target "$GITHUB_SHA" \
+            --title "HydroAlert-AI v3.0.0 | ESP32, IA e Monitoramento" \
+            --notes-file docs/RELEASE_NOTES_v3.0.0.md \
+            --latest
