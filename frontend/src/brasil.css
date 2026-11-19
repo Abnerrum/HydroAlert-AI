@@ -36,3 +36,11 @@
 .national-footnote{background:#101d2a;border-left:3px solid #32a9e1;padding:11px 14px;border-radius:5px}
 @media(max-width:1000px){.national-stats{grid-template-columns:repeat(2,1fr)}.national-grid{grid-template-columns:1fr}.national-cities-scroll{max-height:220px}}
 @media(max-width:720px){.national-head{display:block;padding:16px}.national-refresh{margin-top:14px}.national-map{height:340px}.national-head h2{font-size:19px}.national-stats strong{font-size:21px}.national-panel-title{flex-wrap:wrap}}
+
+/* Atalho de navegação no celular: a sidebar clássica fica oculta em até 720px. */
+.mobile-quicknav{display:none}
+@media(max-width:720px){
+  .mobile-quicknav{display:flex;overflow:auto;gap:7px;padding:3px 0 13px;margin-bottom:8px;scrollbar-width:thin}
+  .mobile-quicknav button{white-space:nowrap;flex:0 0 auto;color:#a6d5ea;border:1px solid #28556a;background:#0d2332;border-radius:9px;padding:10px 13px;font-size:12px;font-weight:700}
+  .mobile-quicknav button.active{color:#072335;background:#66dbe5;border-color:#5cd5e4}
+}
