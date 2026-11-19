@@ -93,6 +93,7 @@ def executar_backtesting(registros: list[dict]) -> dict:
             "horizonte_h": horizonte,
             "eventos": len(df),
             "mae_persistencia_m": round(float(erro_persistencia.mean()), 4),
+            "rmse_persistencia_m": round(float(((observado - persistencia) ** 2).mean() ** 0.5), 4),
             "pico_observado_m": round(float(observado.max()), 3),
             "lead_time_avaliado_h": horizonte,
             "baseline_evento": _metricas_evento(
@@ -110,6 +111,8 @@ def executar_backtesting(registros: list[dict]) -> dict:
                 item["modelo"] = {
                     "disponivel": True,
                     "mae_m": round(float(erro_modelo.mean()), 4),
+                    "rmse_m": round(float(((observado - previsoes) ** 2).mean() ** 0.5), 4),
+                    "supera_baseline_mae": float(erro_modelo.mean()) < float(erro_persistencia.mean()),
                     "ganho_mae_vs_persistencia_percentual": round(
                         (1 - float(erro_modelo.mean()) / float(erro_persistencia.mean())) * 100,
                         2,

@@ -10,6 +10,18 @@ Protótipo acadêmico de **alerta preditivo de inundações urbanas** com integr
 
 > **Uso acadêmico.** Sensores, coordenadas, cotas, manchas e parte da base incluída no projeto são simulados. O sistema não é um serviço oficial de alerta e não deve ser utilizado para decisões de segurança pública.
 
+## Experimento reprodutível e artigo científico (2026)
+
+O projeto foi avaliado com **1.440 leituras simuladas de 12 sensores**, 120 ciclos de 15 minutos e previsões para **1, 3 e 6 horas**. O modelo Random Forest **não superou a persistência em MAE** nas condições do artigo; portanto, a validação descrita é **da arquitetura experimental**, não de eficácia de alertas reais. Consulte [resultados e limitações](docs/RESULTADOS_EXPERIMENTAIS_2026.md).
+
+Para repetir o experimento sem sobrescrever os dados e o modelo do projeto:
+
+```bash
+python -m scripts.reproduzir_experimento --saida resultados/seed42
+```
+
+O comando usa `seed=42`, gera os dados numa pasta isolada e exporta `metricas.json`. Execute após instalar as dependências de `requirements.txt`.
+
 ## O que mudou na versão 2
 
 A versão foi revisada para ficar mais coerente com o Relatório Inicial do Projeto Integrador. Agora o projeto inclui:

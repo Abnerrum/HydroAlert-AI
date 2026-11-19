@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -20,7 +21,7 @@ from services.telemetry_service import obter_telemetria
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 MODELS_DIR = BASE_DIR / "models"
-MODEL_PATH = MODELS_DIR / "modelo_nivel.joblib"
+MODEL_PATH = Path(os.getenv("HYDRO_MODEL_PATH", str(MODELS_DIR / "modelo_nivel.joblib")))
 MODEL_VERSION = "2.0"
 
 
@@ -91,12 +92,19 @@ def treinar_modelo() -> dict:
         mae_modelo = float(mean_absolute_error(teste[TARGET], previsoes))
         previsao_persistencia = teste["nivel_m"].astype(float)
         mae_persistencia = float(mean_absolute_error(teste[TARGET], previsao_persistencia))
+        classificacao_persistencia = _metricas_classificacao(
+            teste[TARGET], previsao_persistencia, teste["cota_alerta_m"]
+        )
 
         metricas[f"{horizonte}h"] = {
             "mae_m": round(mae_modelo, 4),
             "rmse_m": round(float(mean_squared_error(teste[TARGET], previsoes) ** 0.5), 4),
             "r2": round(float(r2_score(teste[TARGET], previsoes)), 4) if len(teste) > 1 else None,
             "mae_persistencia_m": round(mae_persistencia, 4),
+            "rmse_persistencia_m": round(
+                float(mean_squared_error(teste[TARGET], previsao_persistencia) ** 0.5), 4
+            ),
+            "baseline_classificacao": classificacao_persistencia,
             "supera_baseline": mae_modelo < mae_persistencia,
             "amostras": len(dataset),
             "treino": len(treino),
@@ -133,7 +141,7 @@ def treinar_modelo() -> dict:
         },
     }
 
-    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(artefato, MODEL_PATH)
     return artefato["metrics"]
 

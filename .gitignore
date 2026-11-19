@@ -39,3 +39,6 @@ frontend/dist/
 # Coleta fisica
 /data/esp32_real.csv
 /data/esp32_real.jsonl
+
+# Relatorios de experimentos reprodutiveis
+/resultados/
