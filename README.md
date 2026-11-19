@@ -27,6 +27,12 @@ Se a imagem estiver privada, é necessário autenticar no GHCR e/ou ajustar a vi
 
 A nova aba **Queimadas INPE** consulta arquivos CSV públicos do Programa Queimadas do INPE por meio de função Netlify ou da API FastAPI (`GET /api/queimadas`). Mostra focos de calor detectados por satélite, UF, satélite, data e coordenadas, com atualização automática de **10 em 10 minutos**, horário da última edição e indicação de indisponibilidade. **Detecção não equivale a incêndio confirmado.** Consulte [documentação da fonte](docs/QUEIMADAS_INPE.md).
 
+## Rede nacional de demonstração: 100 sensores VIRTUAIS por UF
+
+O front-end demonstrativo no Netlify gera uma **rede 100% simulada de 2.700 nós virtuais** (100 em cada uma das 27 UFs) para testar mapa, filtros, cenários e escalabilidade. Ao escolher um estado como **MT (Mato Grosso)**, o painel exibe 100 sensores virtuais com IDs `VIRT-MT-001` a `VIRT-MT-100`. Na visão Brasil, o mapa exibe uma amostra de 108 nós para desempenho, mas o total configurado permanece 2.700.
+
+**Atenção: nenhum dos 2.700 nós é uma estação física instalada.** As posições são ilustrativas em torno das capitais; nível, chuva e riscos são sintéticos. O filtro por município só encontra nós virtuais no entorno da capital correspondente. A aba ESP32 físico permanece completamente separada. O backend FastAPI não foi convertido em uma rede física nacional. Veja [guia técnico da rede virtual](docs/SENSORES_VIRTUAIS_100_POR_UF.md).
+
 ## Seletor de todos os estados brasileiros
 
 O filtro **Estado / Distrito Federal** mostra as **27 unidades federativas (26 estados + DF)**, organizadas nas cinco regiões do Brasil. O catálogo é carregado diretamente no front-end, mesmo se a API de localidades estiver temporariamente indisponível. Ao selecionar uma UF, os municípios são consultados pelo IBGE.
