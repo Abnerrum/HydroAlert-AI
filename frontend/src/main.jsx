@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import './styles.css'
 import './advanced.css'
 import './mapfix.css'
+import './command-center.css'
 import App from './App'
 
 ReactDOM.createRoot(document.getElementById('root')).render(<React.StrictMode><App /></React.StrictMode>)
