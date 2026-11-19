@@ -1,5 +1,8 @@
 # HydroAlert AI v3 — Brasil
 
+**[🚀 Lançamento v3.0.0 — ESP32, IA e Monitoramento](https://github.com/Abnerrum/HydroAlert-AI/releases/tag/v3.0.0)** · [Notas da versão](docs/RELEASE_NOTES_v3.0.0.md)
+
+
 ## Instalar no Windows depois de extrair o ZIP
 
 Abra **INSTALAR_TUDO.bat** e escolha **1** para sensores USB ou **2** para o projeto completo. O instalador prepara Python, ambiente virtual, ferramentas ESP32 e bibliotecas DHT, e compila o firmware. No modo completo tambem prepara as dependencias do painel e instala Docker Desktop se necessario. Internet necessaria; termos, drivers especificos e configuracao WSL2 podem exigir intervencao.
