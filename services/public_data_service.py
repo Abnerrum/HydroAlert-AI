@@ -34,7 +34,7 @@ def catalogo_fontes() -> list[dict]:
     return [
         {
             "nome": "Open-Meteo",
-            "uso": "previsão horária complementar no protótipo",
+            "uso": "modelos meteorológicos nas 27 capitais e consulta por localidade",
             "integracao": "ATIVA",
             "tipo": "API",
         },

@@ -53,3 +53,6 @@ A organização foi feita de forma incremental para não quebrar imports Python,
 
 ### Hardware e coleta real
 - [Integração do ESP32 físico no painel](INTEGRACAO_ESP32_REAL.md) — USB, calibração, API, React e limites.
+
+### Dados nacionais
+- [Meteorologia nas 27 capitais e consulta de municípios](COBERTURA_METEOROLOGICA_BRASIL.md) — origem, limites e testes.

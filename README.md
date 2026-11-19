@@ -23,6 +23,12 @@ docker pull ghcr.io/abnerrum/hydroalert-ai:v3.0.0
 
 Se a imagem estiver privada, é necessário autenticar no GHCR e/ou ajustar a visibilidade em **Packages → hydroalert-ai → Package settings → Change visibility**. O contêiner executa a API e o painel, **não** inclui dados de sensores reais, banco MongoDB ou leituras do ESP32. Para a arquitetura completa, consulte o `docker-compose.yml` e a documentação; a hospedagem do site e o pacote Docker são coisas diferentes.
 
+## Meteorologia nacional: 27 UFs (2026)
+
+A seção **Meteorologia Brasil** consulta **dados meteorológicos modelados** do Open-Meteo para as **27 capitais** (uma localização de referência por UF) e permite consultar outros municípios selecionados nos filtros do IBGE. O site estático Netlify consulta a fonte diretamente, sem precisar do FastAPI. O backend também oferece `GET /api/meteorologia/brasil` com cache de 10 minutos.
+
+**Atenção:** isso não fornece níveis reais de rios em todo o país nem representa uma rede de sensores em cada município. São saídas de modelos meteorológicos, não medições de estações hidrológicas. Se a fonte falhar, os valores ficam indisponíveis, sem dados inventados. Veja [Cobertura Nacional](docs/COBERTURA_METEOROLOGICA_BRASIL.md).
+
 ## ESP32 físico com leituras separadas da simulação (2026)
 
 A aba **ESP32 físico** do React consulta `GET /api/esp32/leituras` para mostrar medições reais recebidas via USB, sem misturar com os resultados do simulador. O HC-SR04 exige calibração e o DHT11 não mede chuva. [Guia completo de montagem, coleta, testes e limites](docs/INTEGRACAO_ESP32_REAL.md).
