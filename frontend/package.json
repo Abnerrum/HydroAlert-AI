@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "test": "node --test src/mapUtils.test.js"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
@@ -17,9 +16,7 @@
     "leaflet": "^1.9.4",
     "react-leaflet": "^5.0.0",
     "recharts": "^3.1.2",
-    "lucide-react": "^0.544.0",
-    "maplibre-gl": "^6.16.0",
-    "@maplibre/maplibre-gl-leaflet": "^0.1.0"
+    "lucide-react": "^0.544.0"
   },
   "devDependencies": {}
 }
