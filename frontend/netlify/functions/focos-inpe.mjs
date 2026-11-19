@@ -98,7 +98,7 @@ const ler = async (url, ms = 7800) => {
   } finally { clearTimeout(timeout) }
 }
 
-export async function carregarINPE(obter = ler) {
+export async function carregarINPE(obter = ler, uf = '') {
   const html = await obter(BASE)
   const nomes = localizarArquivos(html)
   if (nomes.length === 0) throw new Error('O INPE não disponibilizou arquivos recentes.')
@@ -131,7 +131,9 @@ export async function carregarINPE(obter = ler) {
     parcial: arquivosValidos < nomes.length,
     ultimo_arquivo_utc: stamp, consulta_em_utc: new Date().toISOString(),
     atraso_minutos: atrasoMinutos, total_deteccoes: resultados.length, por_uf,
-    focos: resultados.slice(0, 600), total_exibido: Math.min(600, resultados.length),
+    focos: resultados.filter(x => !uf || x.uf === uf).slice(0, 600),
+    total_exibido: Math.min(600, uf ? (por_uf[uf] || 0) : resultados.length),
+    filtro_uf: uf || null,
     url_fonte:BASE,
     aviso:'Focos de calor detectados por satélite, não incêndios confirmados. A fonte tem atraso e limitações de detecção. Não usar como alerta de emergência.',
   }
@@ -140,7 +142,9 @@ export async function carregarINPE(obter = ler) {
 export default async function handler(request) {
   if (request.method !== 'GET') return new Response('Método não permitido.', { status:405 })
   try {
-    const data = await carregarINPE()
+    const uf = new URL(request.url).searchParams.get('uf')?.toUpperCase() || ''
+    if (uf && !UF_VALIDAS.has(uf)) return Response.json({ erro:'UF inválida' }, {status:400})
+    const data = await carregarINPE(ler, uf)
     return Response.json(data, {
       headers:{ 'Cache-Control':'public, max-age=0, s-maxage=600, stale-while-revalidate=180' },
     })

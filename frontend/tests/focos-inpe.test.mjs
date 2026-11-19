@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { localizarArquivos, interpretarCSV, carregarINPE } from './focos-inpe.mjs'
+import { localizarArquivos, interpretarCSV, carregarINPE } from '../netlify/functions/focos-inpe.mjs'
 
 test('usa arquivos recentes em ordem e limita a 6 períodos', () => {
   const html = Array.from({length:8},(_,i)=>'<a href="focos_10min_20261119_1' + String(i).padStart(3,'0') + '.csv">arquivo</a>').join('')

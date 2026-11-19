@@ -99,12 +99,12 @@ def _obter(url: str) -> str:
         return r.read(3_000_000).decode("utf-8-sig", errors="replace")
 
 
-def consultar_queimadas(forcar: bool = False, obter=None) -> dict:
+def consultar_queimadas(forcar: bool = False, obter=None, uf: str = '') -> dict:
     """Mostra as seis últimas edições de 10min. Sem dados fictícios."""
     global _CACHE
     obter = obter or _obter
     with _LOCK:
-        if obter is _obter and not forcar and _CACHE and time.monotonic() < _CACHE[0]:
+        if obter is _obter and not forcar and not uf and _CACHE and time.monotonic() < _CACHE[0]:
             return _CACHE[1]
 
     nomes = sorted(set(PADRAO.findall(obter(INPE_URL))))[-6:]
@@ -146,7 +146,9 @@ def consultar_queimadas(forcar: bool = False, obter=None) -> dict:
         "consulta_em_utc": datetime.now(UTC).isoformat(),
         "atraso_minutos": idade,
         "total_deteccoes": len(focos), "por_uf": por_uf,
-        "focos": focos[:600], "total_exibido": min(600, len(focos)),
+        "focos": [f for f in focos if not uf or f["uf"] == uf][:600],
+        "total_exibido": min(600, (por_uf.get(uf, 0) if uf else len(focos))),
+        "filtro_uf": uf or None,
         "url_fonte": INPE_URL,
         "aviso": (
             "Focos de calor detectados por satélite, não incêndios confirmados. "
@@ -154,6 +156,6 @@ def consultar_queimadas(forcar: bool = False, obter=None) -> dict:
         ),
     }
     with _LOCK:
-        if obter is _obter:
+        if obter is _obter and not uf:
             _CACHE = (time.monotonic() + 600, resposta)
     return resposta
