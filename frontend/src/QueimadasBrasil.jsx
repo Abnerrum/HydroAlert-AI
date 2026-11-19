@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CircleMarker, MapContainer, Popup, TileLayer, useMap } from 'react-leaflet'
 import { AlertTriangle, Flame, RefreshCw, Satellite, MapPin } from 'lucide-react'
+import { api } from './api'
 import './queimadas.css'
 
 const CENTRAL = [-14.2, -51.9]
@@ -42,9 +43,14 @@ export default function QueimadasBrasil({ uf = '' }) {
         ? '/.netlify/functions/focos-inpe' + (uf ? '?uf=' + encodeURIComponent(uf) : '')
         : '/api/queimadas' + (uf ? '?uf=' + encodeURIComponent(uf) : '')
       try {
-        const response = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json' } })
-        if (!response.ok) throw new Error('Os focos do INPE não estão disponíveis nesta consulta.')
-        const recebido = await response.json()
+        let recebido
+        if (DEMO_MODE) {
+          const response = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json' } })
+          if (!response.ok) throw new Error('Os focos do INPE não estão disponíveis nesta consulta.')
+          recebido = await response.json()
+        } else {
+          recebido = await api(url)
+        }
         if (recebido.status === 'indisponivel') throw new Error(recebido.erro)
         if (ativo) {
           setDados(recebido)

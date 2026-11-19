@@ -19,6 +19,7 @@ from services.backtesting_service import executar_backtesting, exportar_power_bi
 from services.data_quality_service import avaliar_qualidade
 from services.esp32_service import consultar_esp32
 from services.meteorologia_brasil_service import consultar_meteorologia_brasil
+from services.queimadas_service import consultar_queimadas
 from services.public_data_service import catalogo_fontes, consultar_open_meteo
 from services.telemetry_service import calcular_resumo, obter_telemetria
 from services.territory_service import catalogo_localidades, montar_painel_territorial
@@ -252,6 +253,15 @@ def fontes_publicas():
         "fontes": catalogo_fontes(),
         "aviso": "Uso acadêmico; valide licença e disponibilidade na fonte.",
     }
+
+
+@app.get("/api/queimadas")
+def queimadas_recentes(uf: str = Query(default="", pattern="^([A-Z]{2})?$")):
+    """Detecções satelitais recentes do INPE, com atraso e fonte explícitos."""
+    try:
+        return consultar_queimadas(uf=uf)
+    except (OSError, ValueError, TimeoutError) as erro:
+        raise HTTPException(status_code=503, detail="Dados recentes do INPE indisponíveis.") from erro
 
 
 @app.get("/api/meteorologia/brasil")
