@@ -1,11 +1,38 @@
-const CACHE = 'hydroalert-v4'
-self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['/'])).then(()=>self.skipWaiting())))
-self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())))
-self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return
-  event.respondWith(fetch(event.request).then(response => {
-    const clone=response.clone()
-    caches.open(CACHE).then(cache => cache.put(event.request,clone))
-    return response
-  }).catch(() => caches.match(event.request)))
+// PWA HydroAlert v5: cache apenas do proprio site.
+// Nao interceptar tiles de terceiros (OpenFreeMap, OpenStreetMap, Esri)
+// nem dados dinamicos das APIs; evita imagens de mapa antigas em cache.
+const CACHE = 'hydroalert-v5-cartografia'
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(self.skipWaiting())
+})
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys()
+      .then((chaves) => Promise.all(chaves
+        .filter((chave) => chave.startsWith('hydroalert-') && chave !== CACHE)
+        .map((chave) => caches.delete(chave))))
+      .then(() => self.clients.claim())
+  )
+})
+
+self.addEventListener('fetch', (event) => {
+  const requisicao = event.request
+  if (requisicao.method !== 'GET') return
+
+  const url = new URL(requisicao.url)
+  if (url.origin !== self.location.origin) return
+  if (url.pathname.startsWith('/api/') || url.pathname === '/health') return
+  if (url.pathname.endsWith('/sw.js')) return
+
+  event.respondWith(
+    fetch(requisicao).then((resposta) => {
+      if (resposta.ok && resposta.type === 'basic') {
+        const copia = resposta.clone()
+        event.waitUntil(caches.open(CACHE).then((cache) => cache.put(requisicao, copia)))
+      }
+      return resposta
+    }).catch(() => caches.match(requisicao))
+  )
 })
