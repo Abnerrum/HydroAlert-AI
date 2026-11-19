@@ -1,0 +1,33 @@
+.fires{display:grid;gap:15px;margin-bottom:24px}
+.fires-hero{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:24px;background:linear-gradient(120deg,#332019,#0b202d);border:1px solid #70462d;border-radius:14px}
+.fires-kicker{display:flex;align-items:center;gap:8px;color:#ffb577;font-weight:800;font-size:10px;letter-spacing:1.2px}
+.fires-hero h2{font-size:22px;color:#fff1e4;margin:10px 0}
+.fires-hero p{font-size:12px;color:#c7adb0;max-width:650px;line-height:1.6;margin:0}
+.fires-refresh,.fires-panel-title button{display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;border:1px solid #975e40;border-radius:9px;background:#422719;color:#ffe0c3;padding:11px 13px;white-space:nowrap;font-size:11px;font-weight:800}
+.fires-refresh:disabled{opacity:.5;cursor:wait}
+.fires-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.fires-stats>div{padding:16px;background:#101c2a;border:1px solid #334357;border-radius:12px;min-width:0}
+.fires-stats small,.fires-stats span{display:block;font-size:11px;color:#9badc3}
+.fires-stats strong{display:block;font-size:24px;color:#fff0e7;margin:8px 0}
+.fires-stats strong.fires-time{font-size:14px;line-height:1.4}
+.fires-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(265px,.7fr);gap:14px}
+.fires-panel-title{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:62px;padding:15px;border-bottom:1px solid #263949;color:#e5f4fa;font-size:13px;font-weight:800}
+.fires-panel-title span{display:flex;align-items:center;gap:8px}
+.fires-panel-title button{padding:7px 11px;background:#252f3c;border-color:#42516b;color:#e2ebf5}
+.fires-map{height:495px;width:100%;background:#cddce0}
+.fires-legend{padding:11px 14px;background:#121f2a;color:#bac7d2;font-size:11px;line-height:1.5;margin:0}
+.fires-legend span{display:inline-block;height:9px;width:9px;background:#ef7e31;border-radius:50%;margin-right:6px}
+.fires-rank{padding:18px;display:grid;gap:13px;align-content:start;min-height:245px}
+.fires-rank>div{display:grid;grid-template-columns:32px 1fr 48px;align-items:center;gap:8px;color:#d5e6ed;font-size:12px}
+.fires-rank strong{text-align:right;font-size:12px}
+.fires-bar{background:#283a4a;border-radius:9px;height:8px;overflow:hidden}
+.fires-bar i{display:block;height:100%;background:linear-gradient(90deg,#ffbf5b,#ed6a42);border-radius:9px}
+.fires-rank p{font-size:12px;color:#9eb6c1}
+.fires-source{padding:18px;border-top:1px solid #29394a;background:#111f2a;display:grid;gap:8px}
+.fires-source strong{font-size:12px;color:#f4c49e}
+.fires-source p{margin:0;font-size:11px;line-height:1.6;color:#8eacb9}
+.fires-source a{font-size:11px;font-weight:700;color:#63cfee}
+.fires-warning{border:1px solid #8b5a32;border-radius:9px;background:#35291cb3;padding:12px 15px;color:#f3caa3;font-size:11px;line-height:1.5;display:flex;align-items:flex-start;gap:9px}
+.fires-warning svg{flex:none}
+@media(max-width:1000px){.fires-body{grid-template-columns:1fr}.fires-stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.fires-hero{display:block;padding:16px}.fires-refresh{margin-top:14px}.fires-hero h2{font-size:19px}.fires-stats strong{font-size:20px}.fires-map{height:350px}}

@@ -23,6 +23,10 @@ docker pull ghcr.io/abnerrum/hydroalert-ai:v3.0.0
 
 Se a imagem estiver privada, é necessário autenticar no GHCR e/ou ajustar a visibilidade em **Packages → hydroalert-ai → Package settings → Change visibility**. O contêiner executa a API e o painel, **não** inclui dados de sensores reais, banco MongoDB ou leituras do ESP32. Para a arquitetura completa, consulte o `docker-compose.yml` e a documentação; a hospedagem do site e o pacote Docker são coisas diferentes.
 
+## Queimadas INPE quase em tempo real (2026)
+
+A nova aba **Queimadas INPE** consulta arquivos CSV públicos do Programa Queimadas do INPE por meio de função Netlify ou da API FastAPI (`GET /api/queimadas`). Mostra focos de calor detectados por satélite, UF, satélite, data e coordenadas, com atualização automática de **10 em 10 minutos**, horário da última edição e indicação de indisponibilidade. **Detecção não equivale a incêndio confirmado.** Consulte [documentação da fonte](docs/QUEIMADAS_INPE.md).
+
 ## Meteorologia nacional: 27 UFs (2026)
 
 A seção **Meteorologia Brasil** consulta **dados meteorológicos modelados** do Open-Meteo para as **27 capitais** (uma localização de referência por UF) e permite consultar outros municípios selecionados nos filtros do IBGE. O site estático Netlify consulta a fonte diretamente, sem precisar do FastAPI. O backend também oferece `GET /api/meteorologia/brasil` com cache de 10 minutos.

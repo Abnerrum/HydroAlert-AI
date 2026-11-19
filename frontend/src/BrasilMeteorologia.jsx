@@ -51,7 +51,13 @@ export default function BrasilMeteorologia({ uf, municipio, estados = [] }) {
     } finally { setLoading(false) }
   }
 
-  useEffect(() => { carregar() }, [])
+  useEffect(() => {
+    carregar()
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== 'hidden') carregar(true)
+    }, 10 * 60 * 1000)
+    return () => window.clearInterval(timer)
+  }, [])
   useEffect(() => {
     setCidade(null)
     setErroCidade('')
@@ -88,7 +94,7 @@ export default function BrasilMeteorologia({ uf, municipio, estados = [] }) {
     <div className="national-head">
       <div><span className="national-kicker"><Globe2 size={15}/> METEOROLOGIA NACIONAL</span>
         <h2>Brasil em dados meteorológicos</h2>
-        <p>Capitais das 27 unidades federativas. Dados atualizados de modelos, não sensores de rios.</p>
+        <p>Capitais das 27 unidades federativas. Atualização automática a cada 10 min enquanto a página está aberta. Saídas de modelos, não sensores de rios.</p>
       </div>
       <button className="national-refresh" type="button" disabled={loading} onClick={() => carregar(true)}>
         <RefreshCw size={16}/> {loading ? 'Consultando…' : 'Atualizar clima'}

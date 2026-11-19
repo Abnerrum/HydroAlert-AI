@@ -39,6 +39,12 @@ def catalogo_fontes() -> list[dict]:
             "tipo": "API",
         },
         {
+            "nome": "INPE / Programa Queimadas",
+            "uso": "detecções satelitais recentes por CSV público a cada ~10 min",
+            "integracao": "ATIVA",
+            "tipo": "FOCOS_SATELITAIS",
+        },
+        {
             "nome": "CEMADEN",
             "uso": "pluviometria, monitoramento e apoio à pesquisa de eventos",
             "integracao": "PLANEJADA",

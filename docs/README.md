@@ -56,3 +56,6 @@ A organização foi feita de forma incremental para não quebrar imports Python,
 
 ### Dados nacionais
 - [Meteorologia nas 27 capitais e consulta de municípios](COBERTURA_METEOROLOGICA_BRASIL.md) — origem, limites e testes.
+
+### Focos de calor
+- [Detecções por satélite INPE (~10 min)](QUEIMADAS_INPE.md) — atualização, mapas, proveniência e limites.
