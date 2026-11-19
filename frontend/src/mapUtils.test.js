@@ -13,6 +13,14 @@ test('não inventa coordenadas para sensores ausentes ou inválidos', () => {
   assert.deepEqual(prepararPontos([]), [])
 })
 
+test('coordenada zero pode ser real, enquanto null não é', () => {
+  const pontos = prepararPontos([
+    { sensor_id: 'EQUADOR', latitude: 0, longitude: -51, risco: 'BAIXO' },
+    { sensor_id: 'AUSENTE', latitude: null, longitude: -51 },
+  ])
+  assert.deepEqual(pontos.map((p) => p.sensor_id), ['EQUADOR'])
+})
+
 test('busca por município sem depender de acentos', () => {
   const pontos = prepararPontos(entrada)
   assert.equal(filtrarPontos(pontos, 'anapolis')[0].sensor_id, 'GO-1')
