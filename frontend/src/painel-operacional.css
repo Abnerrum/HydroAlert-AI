@@ -1,0 +1,65 @@
+/* Painel inicial inspirado no conceito visual do HydroAlert-AI, sem fabricar telemetria. */
+.op-dashboard{display:grid;gap:16px;margin-bottom:10px}
+.op-intro{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:19px 22px;background:linear-gradient(105deg,#102e4a,#0b192b 70%);border:1px solid #2b526e;border-radius:15px}
+.op-eyebrow{display:flex;align-items:center;gap:8px;color:#54cbfa;letter-spacing:1.3px;font-size:10px;font-weight:800}
+.op-intro h2{font-size:23px;letter-spacing:-.5px;margin:8px 0 5px;color:#f2faff}
+.op-intro p{font-size:11px;color:#a4bdcf;margin:0;line-height:1.6}
+.op-intro-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.op-health{display:inline-flex;align-items:center;gap:7px;background:#113425;border:1px solid #205d47;color:#66e2ae;border-radius:25px;padding:9px 12px;font-size:11px}
+.op-health i{height:7px;width:7px;border-radius:50%;background:#32d994;box-shadow:0 0 8px #32d994}
+.op-intro-actions button,.op-plain-button{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border:1px solid #2d5674;border-radius:9px;background:#163751;color:#cceaff;cursor:pointer;font-weight:700;font-size:11px}
+.op-intro-actions button:disabled{opacity:.6;cursor:wait}
+.op-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.op-kpi{display:flex;align-items:center;gap:13px;min-width:0;background:linear-gradient(145deg,#122438,#0b1929);border:1px solid #28415a;border-radius:13px;padding:19px 15px}
+.op-kpi-icon{flex:0 0 43px;height:43px;border-radius:12px;background:#153d62;display:grid;place-items:center;color:#4ebfff}
+.op-kpi.op-green .op-kpi-icon{background:#123f36;color:#39e2aa}
+.op-kpi.op-gold .op-kpi-icon{background:#473719;color:#ffcf56}
+.op-kpi.op-red .op-kpi-icon{background:#4b2531;color:#ff7588}
+.op-kpi>div:last-child{min-width:0}
+.op-kpi span{display:block;color:#9db5c9;font-size:10px;font-weight:700}
+.op-kpi strong{display:block;color:#f1f9ff;font-size:22px;line-height:1.25;margin:6px 0;overflow-wrap:anywhere}
+.op-kpi small{display:block;font-size:10px;line-height:1.5;color:#7895ac}
+.op-content{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(310px,1fr);gap:15px;align-items:stretch}
+.op-panel{min-width:0;background:linear-gradient(150deg,#0b1d32,#071522);border:1px solid #24405b;border-radius:14px;overflow:hidden}
+.op-map-panel{display:flex;flex-direction:column}
+.op-panel-heading{min-height:70px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #233b54}
+.op-panel-heading span{font-size:9px;letter-spacing:1.4px;color:#44c4f1;font-weight:800}
+.op-panel-heading h3{margin:6px 0 0;font-size:15px;color:#eef7ff;line-height:1.35}
+.op-heading-icon{color:#5dcaff;flex:none}.op-warning{color:#ffb55f}
+.op-map-wrapper{position:relative;min-height:425px;flex:1}
+.op-map{height:100%;min-height:425px;width:100%;background:#0a1b2c}
+.op-map .leaflet-tile{filter:saturate(.85) brightness(.75)!important}
+.op-map-wrapper .leaflet-container{z-index:0}
+.op-map-overlay{position:absolute;bottom:12px;left:12px;z-index:500;display:flex;align-items:flex-start;gap:7px;flex-direction:column;background:#091c30e8;border:1px solid #36536b;border-radius:9px;padding:11px 13px;color:#d5e9fa;font-size:10px}
+.op-map-overlay>span{display:flex;align-items:center;gap:7px}
+.op-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#40bdfa}
+.op-dot.op-orange{background:#fca45b}
+.op-map-footer{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:14px;color:#8da8ba;font-size:10px;line-height:1.6}
+.op-map-footer span{max-width:390px}
+.op-map-footer button,.op-alerts-link{color:#5fd0ff;background:transparent;border:0;display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;font-weight:800;white-space:nowrap}
+.op-side{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:15px;min-width:0}
+.op-forecast-body{padding:10px 13px 14px}
+.op-forecast-empty{height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#6797b7;text-align:center}
+.op-forecast-empty b{color:#d1e9f8;font-size:12px}
+.op-forecast-empty span{font-size:11px;max-width:250px}
+.op-forecast-footer{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 4px}
+.op-forecast-footer>div{background:#11283c;border-radius:8px;padding:11px 10px}
+.op-forecast-footer span{display:flex;align-items:center;gap:6px;color:#8eb1c6;font-size:10px}
+.op-forecast-footer b{display:block;font-size:15px;color:#e5f8ff;margin-top:7px}
+.op-forecast-body p{font-size:10px;color:#7d9aaf;line-height:1.6;margin:7px 5px 0}
+.op-alerts-body{padding:12px 17px 15px}
+.op-no-alerts{display:flex;gap:12px;align-items:flex-start;background:#162c3c;border:1px solid #375263;padding:13px;border-radius:10px;color:#6bc6ea}
+.op-no-alerts svg{flex:0 0 auto}
+.op-no-alerts b,.op-no-alerts span{display:block}
+.op-no-alerts b{font-size:12px;color:#e4f2fc}
+.op-no-alerts span{font-size:10px;color:#a1b9c9;margin-top:5px;line-height:1.65}
+.op-alert-entry{display:flex;gap:10px;align-items:flex-start;padding:9px 0;color:#ff9d72;border-bottom:1px solid #254054}
+.op-alert-entry svg{flex:none}
+.op-alert-entry b{display:block;font-size:11px;color:#f6e3da}
+.op-alert-entry span,.op-alert-entry small{display:block;font-size:10px;color:#a8bbc7;margin-top:4px}
+.op-alerts-link{margin-top:13px}
+.op-disclaimer{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:#172735;border:1px solid #395064;border-radius:10px;color:#b2c2ce;line-height:1.6;font-size:10px;margin:0}
+.op-disclaimer svg{flex:0 0 auto;color:#e1b46f}
+@media(max-width:1200px){.op-content{grid-template-columns:1fr}.op-side{grid-template-columns:1fr 1fr;grid-template-rows:auto}.op-map-wrapper,.op-map{min-height:360px}}
+@media(max-width:900px){.op-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.op-side{grid-template-columns:1fr}}
+@media(max-width:540px){.op-intro{padding:16px}.op-intro h2{font-size:20px}.op-kpis{gap:8px}.op-kpi{padding:12px 10px;gap:8px;align-items:flex-start}.op-kpi-icon{width:30px;height:30px;flex-basis:30px}.op-kpi-icon svg{width:18px}.op-kpi span{font-size:9px}.op-kpi strong{font-size:17px}.op-kpi small{font-size:9px}.op-map-wrapper,.op-map{min-height:315px}.op-map-footer{align-items:flex-start;flex-direction:column}.op-panel-heading{padding:13px}}
