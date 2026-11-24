@@ -4,6 +4,7 @@ WORKDIR /frontend
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend ./
+COPY services/capitais_brasil.json /services/capitais_brasil.json
 RUN npm run build
 
 FROM python:3.12-slim
